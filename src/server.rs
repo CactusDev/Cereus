@@ -1,8 +1,8 @@
 
 use ws::listen;
 
-pub fn handle_server(port: i32) {
-    if let Err(error) = listen("localhost:5000", |out| {
+pub fn handle_server(host: &str, port: i32) {
+    if let Err(error) = listen(format!("{}:{}", host, port), |out| {
         move |msg| {
             println!("Got: {}", msg);
             out.send(msg)
