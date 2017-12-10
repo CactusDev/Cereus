@@ -4,5 +4,5 @@ version = "0.1.0"
 authors = ["CactusDev"]
 
 [dependencies]
-ws = "*"
-env_logger = "*"
+ws = "0.7.3"
+env_logger = "0.4.3"
