@@ -1,10 +1,10 @@
 
 #[derive(Debug)]
 pub enum Component {
-    Text { data: String },
-    Emoji { data: String },
-    Tag { data: String },
-    URL { data: String },
+    Text(String),
+    Emoji(String),
+    Tag(String),
+    URL(String),
 }
 
 #[derive(Debug)]
