@@ -1,5 +1,5 @@
-
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", content = "data", rename_all = "camelCase")]
 pub enum Component {
     Text(String),
     Emoji(String),
@@ -7,7 +7,8 @@ pub enum Component {
     URL(String),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum Event {
     Start { new: bool },
     Follow { success: bool },
@@ -16,17 +17,16 @@ pub enum Event {
     Join { success: bool },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum Packet {
-    Message {
-        text: Vec<Component>,
-        action: bool,
-    },
+    Message { text: Vec<Component>, action: bool },
     Ban { duration: Option<usize> },
     Event { kind: Event },
 }
 
-#[derive(Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum Role {
     Banned,
     User,
@@ -35,12 +35,12 @@ pub enum Role {
     Owner,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Context {
-    packet: Packet,
-    channel: String,
-    user: Option<String>,
-    role: Option<Role>,
-    target: Option<String>,
-    service: String,
+    pub packet: Packet,
+    pub channel: String,
+    pub user: Option<String>,
+    pub role: Option<Role>,
+    pub target: Option<String>,
+    pub service: String,
 }

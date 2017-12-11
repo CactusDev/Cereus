@@ -1,38 +1,44 @@
+use ws;
+use serde_json;
 
-use ws::{listen, CloseCode, Message, Sender, Handler, Result};
-use json::parse;
-use error_builder::generate_error;
+use packet;
+use response_builder::Response;
 
-pub fn handle_server(host: &str, port: i32) {
+
+pub fn handle_server(host: &str, port: i16) {
 
     struct Server {
-        ws: Sender,
+        ws: ws::Sender,
     }
 
-    impl Handler for Server {
-        fn on_message(&mut self, msg: Message) -> Result<()> {
-            println!("Got: {}", msg);
-            let parsed = parse(&msg.to_string());
-            if parsed.is_err() {
-                return self.ws.send(generate_error("Packets must be JSON!"))
-            }
-            // Basic checks to make sure we can actually parse this packet
-            let unwrapped = parsed.unwrap();
-            if unwrapped["type"].is_null() {
-                return self.ws.send(generate_error("Must provide a packet type."));
-            }
-            println!("Stuff: {}", unwrapped["a"]);
-            self.ws.send(msg)
+    impl ws::Handler for Server {
+        fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
+
+            println!("Received: {}", msg);
+
+            let build_response = |msg: ws::Message| {
+                let parsed: serde_json::Result<packet::Context> =
+                    serde_json::from_str(&msg.to_string());
+
+                if parsed.is_err() {
+                    return Response::Error("Invalid context.".to_string());
+                }
+
+                let deserialized = parsed.unwrap();
+                println!("{:?}", deserialized);
+
+                return Response::Success(serde_json::to_value(deserialized).unwrap());
+            };
+
+            let response = build_response(msg);
+
+            self.ws.send(serde_json::to_string(&response).unwrap())
         }
 
-        fn on_close(&mut self, _: CloseCode, _: &str) {
+        fn on_close(&mut self, _: ws::CloseCode, _: &str) {
             self.ws.shutdown().unwrap();
         }
     }
 
-    listen(format!("{}:{}", host, port), |out| {
-        Server {
-            ws: out,
-        }
-    }).unwrap();
+    ws::listen(format!("{}:{}", host, port), |out| Server { ws: out }).unwrap();
 }
