@@ -2,6 +2,8 @@
 extern crate env_logger;
 extern crate ws;
 
+extern crate json;
+
 mod server;
 
 fn main () {

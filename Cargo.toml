@@ -6,3 +6,4 @@ authors = ["CactusDev"]
 [dependencies]
 ws = "*"
 env_logger = "*"
+json = "*"
