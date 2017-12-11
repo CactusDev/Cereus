@@ -16,7 +16,7 @@ pub fn handle_server(host: &str, port: i16) {
 
             println!("Received: {}", msg);
 
-            let build_response = |msg: ws::Message| {
+            let build_response = |msg: &ws::Message| {
                 let parsed: serde_json::Result<packet::Context> =
                     serde_json::from_str(&msg.to_string());
 
@@ -30,9 +30,9 @@ pub fn handle_server(host: &str, port: i16) {
                 return Response::Success(serde_json::to_value(deserialized).unwrap());
             };
 
-            let response = build_response(msg);
-
-            self.ws.send(serde_json::to_string(&response).unwrap())
+            self.ws.send(
+                serde_json::to_string(&build_response(&msg)).unwrap(),
+            )
         }
 
         fn on_close(&mut self, _: ws::CloseCode, _: &str) {

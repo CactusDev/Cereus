@@ -26,7 +26,7 @@ pub enum Packet {
 }
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
+#[serde(rename_all = "camelCase")]
 pub enum Role {
     Banned,
     User,
