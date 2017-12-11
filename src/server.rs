@@ -1,6 +1,7 @@
 
 use ws::{listen, CloseCode, Message, Sender, Handler, Result};
 use json::parse;
+use error_builder::generate_error;
 
 pub fn handle_server(host: &str, port: i32) {
 
@@ -13,9 +14,14 @@ pub fn handle_server(host: &str, port: i32) {
             println!("Got: {}", msg);
             let parsed = parse(&msg.to_string());
             if parsed.is_err() {
-                return self.ws.send("Uh oh!")
+                return self.ws.send(generate_error("Packets must be JSON!"))
             }
-            println!("Stuff: {}", parsed.unwrap()["a"]);
+            // Basic checks to make sure we can actually parse this packet
+            let unwrapped = parsed.unwrap();
+            if unwrapped["type"].is_null() {
+                return self.ws.send(generate_error("Must provide a packet type."));
+            }
+            println!("Stuff: {}", unwrapped["a"]);
             self.ws.send(msg)
         }
 
