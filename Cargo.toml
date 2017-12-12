@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["CactusDev"]
 
 [dependencies]
-ws = "0.7.3"
+ws = { version = "*", git = "https://github.com/housleyjk/ws-rs"}
 env_logger = "0.4.3"
 serde = "1.0"
 serde_derive = "1.0"

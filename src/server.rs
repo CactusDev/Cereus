@@ -34,7 +34,13 @@ pub fn run_server(host: &str, port: i16) {
     impl ws::Handler for Server {        
         fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
             println!("Received: {}", msg);
-            self.registry.add(&[String::from("test")], &self.ws);
+
+            if self.registry.add(&[String::from("test")], &self.ws) {
+                self.ws.send("Test1");
+            } else {
+                self.ws.send("Test2");
+            }
+
             self.registry.emit(String::from("test"), String::from("Testing"));
             let result = &self.handle_message(&msg);
             self.ws.send(serde_json::to_string(result).unwrap())
