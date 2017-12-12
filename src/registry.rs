@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use std::vec::Vec;
 use ws::Sender;
 
+// TODO: Don't allow the same client to be subscribed to the same
+// event multiple times.
+
 pub struct ClientRegistry {
     clients: HashMap<String, Vec<Sender>>,
 }
@@ -27,7 +30,6 @@ impl ClientRegistry {
         match self.clients.get(&event) {
             Some(clients) => {
                 for client in clients {
-                    println!("Sending");
                     client.send(data.clone());
                 }
             },

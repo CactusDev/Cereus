@@ -16,7 +16,6 @@ struct Server {
 
 impl PacketHandler for Server {
     fn handle_message(&mut self, msg: &ws::Message) -> Response {
-        self.registry.add(&[String::from("test")], &self.ws);
         let parsed: serde_json::Result<packet::Context> =
                 serde_json::from_str(&msg.to_string());
 
@@ -35,13 +34,13 @@ pub fn run_server(host: &str, port: i16) {
     impl ws::Handler for Server {        
         fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
             println!("Received: {}", msg);
-
+            self.registry.add(&[String::from("test")], &self.ws);
+            self.registry.emit(String::from("test"), String::from("Testing"));
             let result = &self.handle_message(&msg);
             self.ws.send(serde_json::to_string(result).unwrap())
         }
 
         fn on_close(&mut self, _: ws::CloseCode, _: &str) {
-            self.ws.shutdown().unwrap();
         }
     }
 
