@@ -14,7 +14,7 @@ struct Server {
     registry: ClientRegistry
 }
 
-pub fn handle_server(host: &str, port: i16) {
+pub fn run_server(host: &str, port: i16) {
     impl PacketHandler for Server {
         fn handle_message(&mut self, msg: &ws::Message) -> Response {
             // self.registry.add(&["test".to_string()], client);
@@ -32,7 +32,7 @@ pub fn handle_server(host: &str, port: i16) {
         }
     }
 
-    impl ws::Handler for Server {        
+    impl ws::Handler for Server {
         fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
             println!("Received: {}", msg);
 

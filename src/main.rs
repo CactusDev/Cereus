@@ -14,5 +14,5 @@ mod registry;
 fn main() {
     env_logger::init().unwrap();
 
-    server::handle_server("localhost", 5000);
+    server::run_server("localhost", 5000);
 }
