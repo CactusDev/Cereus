@@ -9,6 +9,7 @@ extern crate serde_json;
 mod packet;
 mod server;
 mod response_builder;
+mod registry;
 
 fn main() {
     env_logger::init().unwrap();
