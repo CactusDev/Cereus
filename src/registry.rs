@@ -26,9 +26,6 @@ impl ClientRegistry {
         return true;
     }
 
-    pub fn remove(&mut self) {
-    }
-
     pub fn emit(&mut self, event: String, data: String) {
         if let Some(clients) = self.clients.get(&event) {
             for client in clients {
@@ -46,5 +43,37 @@ impl ClientRegistry {
             }
         }
         return false;
+    }
+
+    fn collect_clients(&self, event: Option<String>) -> Vec<Sender> {
+        match event {
+            Some(e) => {
+                if let Some(clients) = self.clients.get(&e) {
+                    return clients.clone();
+                }
+                return vec![];
+            },
+            _ => {
+                let mut collected = vec![];
+                for key in self.clients.keys() {
+                    // Note: This makes the compiler say that it doesn't need to be mutable,
+                    // but if you remove it all the things start to error. Never remove the
+                    // `mut` here.
+                    let mut c = self.clients.get(key);
+                    let clients = c.as_mut().unwrap();
+                    collected.extend(clients.iter().cloned());
+                }
+                return collected;
+            }
+        }
+    }
+
+    fn broadcast(&mut self, event: Option<String>, message: String) {
+        // Collect the clients that match the criteria
+        let mut clients: Vec<Sender> = self.collect_clients(event);
+        // Send the message to all the clients
+        for client in clients {
+             let _ = client.send(message.to_string());
+        }
     }
 }

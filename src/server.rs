@@ -36,9 +36,9 @@ pub fn run_server(host: &str, port: i16) {
             println!("Received: {}", msg);
 
             if self.registry.add(&[String::from("test")], &self.ws) {
-                self.ws.send("Test1");
+                let _ = self.ws.send("Test1");
             } else {
-                self.ws.send("Test2");
+                let _ = self.ws.send("Test2");
             }
 
             self.registry.emit(String::from("test"), String::from("Testing"));
