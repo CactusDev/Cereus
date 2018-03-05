@@ -53,7 +53,7 @@ impl ClientRegistry {
                 }
                 return vec![];
             },
-            _ => {
+            None => {
                 let mut collected = vec![];
                 for key in self.clients.keys() {
                     // Note: This makes the compiler say that it doesn't need to be mutable,
@@ -70,7 +70,7 @@ impl ClientRegistry {
 
     fn broadcast(&mut self, event: Option<String>, message: String) {
         // Collect the clients that match the criteria
-        let mut clients: Vec<Sender> = self.collect_clients(event);
+        let clients: Vec<Sender> = self.collect_clients(event);
         // Send the message to all the clients
         for client in clients {
              let _ = client.send(message.to_string());
