@@ -14,8 +14,8 @@ impl ClientRegistry {
         }
     }
 
-    pub fn add(&mut self, events: &[String], client: &Sender) -> bool {
-        for event in events {
+    pub fn add(&mut self, events: Vec<String>, client: &Sender) -> bool {
+        for event in &events {
             // This event already has this client. So we don't want to do anything.
             if self.event_has_client(event.to_string(), client.clone()) {
                 return false;
@@ -51,10 +51,10 @@ impl ClientRegistry {
                 if let Some(clients) = self.clients.get(&e) {
                     return clients.clone();
                 }
-                return vec![];
+                return Vec::new();
             },
             None => {
-                let mut collected = vec![];
+                let mut collected = Vec::new();
                 for key in self.clients.keys() {
                     // Note: This makes the compiler say that it doesn't need to be mutable,
                     // but if you remove it all the things start to error. Never remove the
@@ -68,12 +68,12 @@ impl ClientRegistry {
         }
     }
 
-    fn broadcast(&mut self, event: Option<String>, message: String) {
+    pub fn broadcast(&mut self, event: Option<String>, message: String) {
         // Collect the clients that match the criteria
         let clients: Vec<Sender> = self.collect_clients(event);
         // Send the message to all the clients
         for client in clients {
-             let _ = client.send(message.to_string());
+            let _ = client.send(message.to_string());
         }
     }
 }

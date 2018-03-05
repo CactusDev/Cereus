@@ -44,3 +44,9 @@ pub struct Context {
     pub target: Option<String>,
     pub service: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct PluginPacket {
+    pub context: Context,
+    pub target: String
+}
