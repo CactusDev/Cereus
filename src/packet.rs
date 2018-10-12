@@ -1,5 +1,5 @@
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data", rename_all = "camelCase")]
 pub enum Component {
     Text(String),
@@ -8,7 +8,7 @@ pub enum Component {
     URL(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Event {
     Start { new: bool },
@@ -18,7 +18,7 @@ pub enum Event {
     Join { success: bool },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Packet {
     Message { text: Vec<Component>, action: bool },
@@ -26,7 +26,7 @@ pub enum Packet {
     Event { kind: Event },
 }
 
-#[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Serialize, Deserialize)]
+#[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
     Banned,
@@ -36,12 +36,12 @@ pub enum Role {
     Owner,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Context {
     pub packet: Packet,
     pub channel: String,
     pub user: Option<String>,
     pub role: Option<Role>,
     pub target: Option<String>,
-    pub service: String,
+    pub service: String
 }

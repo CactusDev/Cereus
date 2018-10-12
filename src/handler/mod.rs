@@ -6,5 +6,5 @@ mod command;
 
 pub trait Handler {
 
-	fn run(&mut self, context: Context) -> Option<Packet>;
+	fn run(&mut self, context: &mut Context) -> Option<Packet>;
 }

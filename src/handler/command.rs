@@ -1,4 +1,6 @@
 
+use std::collections::HashMap;
+
 use handler::Handler;
 use packet::*;
 
@@ -17,27 +19,16 @@ impl CommandHandler {
 
 impl Handler for CommandHandler {
 
-	fn run(&mut self, context: Context) -> Option<Packet> {
-		match context.packet {
-			Packet::Message { text, action } => {
-				for (i, component) in text.iter().enumerate() {
-					// If this is the first component, then we need to check if the prefix is present.
-					if i == 0 {
-						if let Component::Text(message) = component {
-							// Since the first component is text, we can actually validate this.
-							if !message.starts_with(&self.prefix) {
-								// Prefix is not present, get out.
-								return None
-							}
-						} else {
-							// If the first component is not text, then this cannot possibly be a command.
-							// However, maybe at somepoint in the future for some silly reason we might want
-							// to support emoji prefixes for commands. If we do, this is where it would go.
-							//     :emoji_prefix
-							//         - Innectic, 10/8/18
-							return None
-						}
-					}
+	fn run(&mut self, context: &mut Context) -> Option<Packet> {
+		match context.clone().packet {
+			Packet::Message { mut text, action } => {
+				// Get the first segment, and attempt to find a matching command
+				let first = text.pop().unwrap();
+				if let Component::Text(name) = first {
+					// Attempt to resolve it from the internal list
+				} else {
+					// Not a string name
+					return None;
 				}
 				None
 			},
