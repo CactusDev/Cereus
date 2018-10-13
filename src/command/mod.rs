@@ -13,3 +13,31 @@ macro_rules! command {
 		}
 	}
 }
+
+#[macro_export]
+macro_rules! url {
+	($url:expr) => {
+		Component::URL($url.to_string())
+	}
+}
+
+#[macro_export]
+macro_rules! text {
+	($text:expr) => {
+		Component::Text($text.to_string())
+	}
+}
+
+#[macro_export]
+macro_rules! emoji {
+	($emoji:expr) => {
+		Component::Emoji($emoji.to_string())
+	}
+}
+
+#[macro_export]
+macro_rules! tag {
+	($tag:expr) => {
+		Component::Tag($tag.to_string())
+	}
+}
