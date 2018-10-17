@@ -18,7 +18,7 @@ use packet::*;
 fn main() {
     env_logger::init().unwrap();
 
-    command!("cactus",
+    let things = command!("cactus",
     	"default" => handler!(|_context| {
     		Packet::Message { text: vec! [
     			text!("Ohai! I'm CactusBot! "),
@@ -26,20 +26,25 @@ fn main() {
     		], action: false }
     	}),
     	"github" => handler!(
-    		"default" => |_context| {
+    		"default" => handler!(|_context| {
     			Packet::Message { text: vec! [
     				text!("We're open source! Check it out at: "),
     				url!("https://github.com/CactusDev")
     			], action: false }
-    		},
-    		"cereus" => |_context| {
+    		}),
+    		"cereus" => handler!(|_context| {
     			Packet::Message { text: vec! [
     				text!("Checkout Cereus at: "),
     				url!("https://github.com/CactusDev/Cereus")
     			], action: false }
-    		}
+    		})
     	)
-    )
+    );
+    let test = things.get_named_subcommand(vec! ["github".to_string(), "cereus".to_string()]);
+    match test {
+    	Some(t) => println!("WE HAVE IT"),
+    	None    => println!("BIG SAD")
+    };
 
     // let mut w = web::WebServer::new("localhost", 1234);
     // w.listen();
