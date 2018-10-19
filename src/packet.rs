@@ -45,3 +45,14 @@ pub struct Context {
     pub target: Option<String>,
     pub service: String
 }
+
+pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
+    let mut finished: Vec<String> = Vec::new();
+
+    for component in components {
+        if let Component::Text(text) = component {
+            finished.push(text);
+        }
+    }
+    return finished;
+}

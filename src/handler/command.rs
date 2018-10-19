@@ -1,18 +1,24 @@
 
-use std::collections::HashMap;
+use std::{
+	rc::Rc,
+	collections::HashMap
+};
 
+use command::manager::CommandManager;
 use handler::Handler;
 use packet::*;
 
 pub struct CommandHandler {
-	prefix: String
+	prefix:  String,
+	manager: Rc<CommandManager>
 }
 
 impl CommandHandler {
 
-	pub fn new(prefix: &str) -> Self {
+	pub fn new(prefix: &str, manager: Rc<CommandManager>) -> Self {
 		CommandHandler {
-			prefix: prefix.to_string()
+			prefix: prefix.to_string(),
+			manager
 		}
 	}
 }
@@ -21,18 +27,12 @@ impl Handler for CommandHandler {
 
 	fn run(&mut self, context: &mut Context) -> Option<Packet> {
 		match context.clone().packet {
-			Packet::Message { mut text, action } => {
-				// Get the first segment, and attempt to find a matching command
-				let first = text.pop().unwrap();
-				if let Component::Text(name) = first {
-					// Attempt to resolve it from the internal list
-				} else {
-					// Not a string name
-					return None;
-				}
-				None
+			Packet::Message { text, action } => match Rc::get_mut(&mut self.manager) {
+				Some(manager) => manager.run_command(context),
+				None          => None  // TODO: We should error here, instead of None
 			},
 			_ => None
 		}
 	}
 }
+ 

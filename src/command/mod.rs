@@ -2,7 +2,9 @@
 use packet::*;
 use std::collections::HashMap;
 
-pub type BuiltinCommandHandler = Fn(Context) -> Packet;
+pub mod manager;
+
+pub type BuiltinCommandHandler = Fn(&Context) -> Packet;
 
 pub enum HandlerType {
 	/// Handler type only has a default handler
@@ -30,12 +32,11 @@ impl Command {
 		self.get_named_subcommand(vec! ["default".to_string()])
 	}
 
-	pub fn get_named_subcommand(&self, name: Vec<String>) -> Option<&Box<BuiltinCommandHandler>> {
-		match name.split_first() {
+	pub fn get_named_subcommand(&self, arguments: Vec<String>) -> Option<&Box<BuiltinCommandHandler>> {
+		match arguments.split_first() {
 			Some((first, remaining)) => {
 				let current_command = self.commands.get(first);
 				if let None = current_command {
-					println!("A");
 					return None;
 				}
 				let mut current_command: &HandlerType = current_command.unwrap();
@@ -71,7 +72,6 @@ impl Command {
 						HandlerType::Only(cmd) => return Some(cmd)
 					}
 				}
-				None
 			},
 			None => None
 		}

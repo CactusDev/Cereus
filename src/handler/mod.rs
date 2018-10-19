@@ -2,7 +2,7 @@
 use packet::*;
 use std::vec::Vec;
 
-mod command;
+pub mod command;
 
 pub trait Handler {
 
