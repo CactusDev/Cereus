@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 pub mod manager;
 
-pub type BuiltinCommandHandler = Fn(&Context) -> Packet;
+pub type BuiltinCommandHandler = Fn(&Context) -> Context;
 
 pub enum HandlerType {
 	/// Handler type only has a default handler

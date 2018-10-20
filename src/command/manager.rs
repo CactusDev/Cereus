@@ -21,7 +21,7 @@ impl CommandManager {
 		self.commands.insert(name.to_string(), command);
 	}
 
-	pub fn run_command(&self, context: &Context) -> Option<Packet> {
+	pub fn run_command(&self, context: &Context) -> Option<Context> {
 		if let Packet::Message { ref text, action } = context.packet {
 			return match text.split_first() {
 				Some((name, arguments)) => {
