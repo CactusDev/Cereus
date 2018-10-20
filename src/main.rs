@@ -45,7 +45,10 @@ fn main() {
     ));
 
     let command_handler = handler::command::CommandHandler::new("!", manager);
-    let handler_handler = handler::HandlerHandler::new(vec! [Box::new(command_handler)]);
+    let logging_handler = handler::logging::LoggingHandler::new();
+    let handler_handler = handler::HandlerHandler::new(vec! [
+        Box::new(command_handler), Box::new(logging_handler)
+    ]);
 
     let context = packet::Context {
         packet: packet::Packet::Message { text: vec! [text!("cactus")], action: false },

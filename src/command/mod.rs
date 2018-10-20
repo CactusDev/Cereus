@@ -96,7 +96,6 @@ impl Command {
 									// Referer: Test (test_tri_subcommand_resolution)
 									// :bug
 									//
-									println!("THIS IS A THING WEEEEE HELP ME");
 									return None
 								}
 							}
@@ -107,7 +106,6 @@ impl Command {
 			},
 			None => {
 				// If we don't have any arguments, give the default handler.
-				println!("ANOTHER THING WEE HELP ME");
 				self.get_default_command_executor()
 			}
 		}
