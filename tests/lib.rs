@@ -46,10 +46,7 @@ fn test_command_name_only_resolves_to_default_handler() {
 		Packet::Message { text, action } => {
 			assert_eq!(action, false);
 			assert_eq!(text.len(), 1);
-			match text[0] {
-				Component::Text(ref text) => assert_eq!(text, "Hello!"),
-				_ => assert!(false)
-			}
+			assert_eq!(text[0], text!("Hello!"))
 		},
 		_ => assert!(false)
 	}
@@ -84,10 +81,7 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 		Packet::Message { text, action } => {
 			assert_eq!(action, false);
 			assert_eq!(text.len(), 1);
-			match text[0] {
-				Component::Text(ref text) => assert_eq!(text, "Hello, world!"),
-				_ => assert!(false)
-			}
+			assert_eq!(text[0], text!("Hello, world!"));
 		},
 		_ => assert!(false)
 	}
@@ -121,10 +115,7 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 		Packet::Message { text, action } => {
 			assert_eq!(action, false);
 			assert_eq!(text.len(), 1);
-			match text[0] {
-				Component::Text(ref text) => assert_eq!(text, "This is a test!"),
-				_ => assert!(false)
-			}
+			assert_eq!(text[0], text!("This is a test!"));
 		},
 		_ => assert!(false)
 	}
@@ -170,10 +161,7 @@ fn test_tri_subcommand_resolution() {
 		Packet::Message { text, action } => {
 			assert_eq!(action, false);
 			assert_eq!(text.len(), 1);
-			match text[0] {
-				Component::Text(ref text) => assert_eq!(text, "Hello!"),
-				_ => assert!(false)
-			}
+			assert_eq!(text[0], text!("Hello!"));
 		},
 		_ => assert!(false)
 	}
