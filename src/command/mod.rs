@@ -146,38 +146,3 @@ macro_rules! handler {
 		}
 	}
 }
-
-#[macro_export]
-macro_rules! url {
-	($url:expr) => {
-		Component::URL($url.to_string())
-	}
-}
-
-#[macro_export]
-macro_rules! text {
-	($text:expr) => {
-		text!($text, "")
-	};
-	($text:expr, $($replacer:expr),*) => {
-		{
-			let mut current = $text.to_string();
-			$(current = current.replacen("{}", $replacer, 1);)*
-			Component::Text(current)
-		}
-	}
-}
-
-#[macro_export]
-macro_rules! emoji {
-	($emoji:expr) => {
-		Component::Emoji($emoji.to_string())
-	}
-}
-
-#[macro_export]
-macro_rules! tag {
-	($tag:expr) => {
-		Component::Tag($tag.to_string())
-	}
-}

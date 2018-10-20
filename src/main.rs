@@ -8,6 +8,7 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod web;
+#[macro_use]
 pub mod packet;
 pub mod handler;
 #[macro_use]
@@ -44,14 +45,24 @@ fn main() {
     	)
     ));
 
-    let command_handler = handler::command::CommandHandler::new("!", manager);
     let logging_handler = handler::logging::LoggingHandler::new();
+    let event_handler = handler::event::EventHandler::new();
+    let command_handler = handler::command::CommandHandler::new("!", manager);
     let handler_handler = handler::HandlerHandler::new(vec! [
-        Box::new(command_handler), Box::new(logging_handler)
+        Box::new(logging_handler), Box::new(event_handler), Box::new(command_handler)
     ]);
 
+    // let context = packet::Context {
+    //     packet: packet::Packet::Message { text: vec! [text!("cactus")], action: false },
+    //     channel: "".to_string(),
+    //     user: None,
+    //     role: None,
+    //     target: None,
+    //     service: "".to_string()
+    // };
+
     let context = packet::Context {
-        packet: packet::Packet::Message { text: vec! [text!("cactus")], action: false },
+        packet: packet::Packet::Event { kind: packet::Event::Start { new: false } },
         channel: "".to_string(),
         user: None,
         role: None,
