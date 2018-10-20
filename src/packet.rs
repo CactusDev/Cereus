@@ -59,6 +59,31 @@ pub struct Context {
     pub service: String
 }
 
+impl Context {
+
+    pub fn message(components: Vec<Component>) -> Self {
+        Context {
+            packet: Packet::Message { text: components, action: false },
+            channel: String::new(),
+            user: None,
+            role: None,
+            target: None,
+            service: String::new()
+        }
+    }
+
+    pub fn from_packet(packet: Packet) -> Self {
+        Context {
+            packet,
+            channel: String::new(),
+            user: None,
+            role: None,
+            target: None,
+            service: String::new()
+        }
+    }
+}
+
 pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
     let mut finished: Vec<String> = Vec::new();
 

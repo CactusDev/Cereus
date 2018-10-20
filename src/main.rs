@@ -24,23 +24,23 @@ fn main() {
 
     manager.add_command(command!("cactus",
     	"default" => handler!(|_context| {
-    		Packet::Message { text: vec! [
+    		Context::message(vec! [
     			text!("Ohai! I'm CactusBot! "),
     			emoji!("cactus")
-    		], action: false }
+    		])
     	}),
     	"github" => handler!(
     		"default" => handler!(|_context| {
-    			Packet::Message { text: vec! [
+    			Context::message(vec! [
     				text!("We're open source! Check it out at: "),
     				url!("https://github.com/CactusDev")
-    			], action: false }
+    			])
     		}),
     		"cereus" => handler!(|_context| {
-    			Packet::Message { text: vec! [
+    			Context::message(vec! [
     				text!("Checkout Cereus at: "),
     				url!("https://github.com/CactusDev/Cereus")
-    			], action: false }
+    			])
     		})
     	)
     ));
@@ -51,25 +51,6 @@ fn main() {
     let handler_handler = handler::HandlerHandler::new(vec! [
         Box::new(logging_handler), Box::new(event_handler), Box::new(command_handler)
     ]);
-
-    // let context = packet::Context {
-    //     packet: packet::Packet::Message { text: vec! [text!("cactus")], action: false },
-    //     channel: "".to_string(),
-    //     user: None,
-    //     role: None,
-    //     target: None,
-    //     service: "".to_string()
-    // };
-
-    let context = packet::Context {
-        packet: packet::Packet::Event { kind: packet::Event::Start { new: false } },
-        channel: "".to_string(),
-        user: None,
-        role: None,
-        target: None,
-        service: "".to_string()
-    };
-    println!("{:?}", handler_handler.handle(&context));
 
     // let mut w = web::WebServer::new("localhost", 1234);
     // w.listen();
