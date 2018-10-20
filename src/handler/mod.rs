@@ -4,6 +4,7 @@ use std::vec::Vec;
 
 pub mod command;
 pub mod logging;
+pub mod event;
 
 pub trait Handler {
 	fn run(&self, context: &Context) -> Option<Packet>;

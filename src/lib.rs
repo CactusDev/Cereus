@@ -8,6 +8,7 @@ extern crate serde;
 extern crate serde_json;
 
 pub mod web;
+#[macro_use]
 pub mod packet;
 pub mod handler;
 #[macro_use]
