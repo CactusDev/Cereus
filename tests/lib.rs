@@ -272,3 +272,55 @@ fn test_follow_with_success() {
     	_ => assert!(false)
     }
 }
+
+#[test]
+fn test_subscribe_with_streak_one() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Subscribe { streak: 1 } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_some());
+    match result.unwrap() {
+    	Packet::Message { ref text, action } => {
+    		assert_eq!(action, false);
+    		assert_eq!(text.len(), 3);
+    		assert_eq!(text[0], text!("Thanks for subscribing, "));
+    		assert_eq!(text[1], tag!("Stanley"));
+    		assert_eq!(text[2], text!("!"));
+    	},
+    	_ => assert!(false)
+    }
+}
+
+#[test]
+fn test_subscribe_with_different_streak() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Subscribe { streak: 2 } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_some());
+    match result.unwrap() {
+    	Packet::Message { ref text, action } => {
+    		assert_eq!(action, false);
+    		assert_eq!(text.len(), 3);
+    		assert_eq!(text[0], text!("Thanks for resubscribing for 2 months, "));
+    		assert_eq!(text[1], tag!("Stanley"));
+    		assert_eq!(text[2], text!("!"));
+    	},
+    	_ => assert!(false)
+    }
+}
