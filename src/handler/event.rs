@@ -34,7 +34,7 @@ impl Handler for EventHandler {
 				},
 				Event::Follow { success } if *success => {
 					Some(Packet::Message { text: vec! [
-							text!("Thanks for follow, "),
+							text!("Thanks for the follow, "),
 							tag!(context.user.clone().unwrap_or("Unknown".to_string())),
 							text!("!")
 						], action: false

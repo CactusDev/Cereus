@@ -205,7 +205,6 @@ fn test_start_with_new() {
     }
 }
 
-
 #[test]
 fn test_start_without_new() {
 	let handler = EventHandler::new();
@@ -226,6 +225,49 @@ fn test_start_without_new() {
     		assert_eq!(text.len(), 2);
     		assert_eq!(text[0], text!("CactusBot activated. "));
     		assert_eq!(text[1], emoji!("cactus"));
+    	},
+    	_ => assert!(false)
+    }
+}
+
+#[test]
+fn test_follow_without_success() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Follow { success: false } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_none());
+}
+
+
+#[test]
+fn test_follow_with_success() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Follow { success: true } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_some());
+    match result.unwrap() {
+    	Packet::Message { ref text, action } => {
+    		assert_eq!(action, false);
+    		assert_eq!(text.len(), 3);
+    		assert_eq!(text[0], text!("Thanks for the follow, "));
+    		assert_eq!(text[1], tag!("Stanley"));
+    		assert_eq!(text[2], text!("!"));
     	},
     	_ => assert!(false)
     }
