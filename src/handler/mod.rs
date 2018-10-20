@@ -3,6 +3,7 @@ use packet::*;
 use std::vec::Vec;
 
 pub mod command;
+pub mod logging;
 
 pub trait Handler {
 	fn run(&self, context: &Context) -> Option<Packet>;
