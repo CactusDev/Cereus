@@ -95,7 +95,7 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 	manager.add_command(command!("cactus",
 		"default" => handler!(|context| {
 			Packet::Message { text: vec! [
-				text!("This is a {}!", &if let Packet::Message { ref text, action } = context.packet {
+				text!("This is a {}!", &if let Packet::Message { ref text, action: _ } = context.packet {
 					text[1].to_string()
 				} else {
 					"Unknown".to_string()
@@ -104,7 +104,7 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 		})
 	));
 
-	let mut context = get_example_text_only_context(Packet::Message {
+	let context = get_example_text_only_context(Packet::Message {
 		text: vec! [ text!("cactus"), text!("test") ],
 		action: false
 	});
@@ -119,6 +119,55 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 			assert_eq!(text.len(), 1);
 			match text[0] {
 				Component::Text(ref text) => assert_eq!(text, "This is a test!"),
+				_ => assert!(false)
+			}
+		},
+		_ => assert!(false)
+	}
+}
+
+#[test]
+fn test_tri_subcommand_resolution() {
+	let mut manager = CommandManager::new();
+	manager.add_command(command!("cactus",
+		"test" => handler! {
+			"default" => handler!(|_context| {
+				Packet::Message { text: vec! [
+					text!("Hello!")
+				], action: false }
+			}),
+			"another" => handler! {
+				"default" => handler!(|_context| {
+					Packet::Message { text: vec! [
+						text!("Hello!")
+					], action: false }
+				}),
+				"final" => handler! {
+					"default" => handler!(|_context| {
+						Packet::Message { text: vec! [
+							text!("Hello!")
+						], action: false }
+					})
+				}
+			}
+		}
+	));
+
+	let context = get_example_text_only_context(Packet::Message {
+		text: vec! [ text!("!cactus"), text!("test"), text!("another"), text!("final") ],
+		action: false
+	});
+	let resolved = manager.run_command(&context);
+	assert!(resolved.is_some());
+
+	let resolved = resolved.unwrap();
+	// Ensure the packet contains the correct response
+	match resolved {
+		Packet::Message { text, action } => {
+			assert_eq!(action, false);
+			assert_eq!(text.len(), 1);
+			match text[0] {
+				Component::Text(ref text) => assert_eq!(text, "Hello!"),
 				_ => assert!(false)
 			}
 		},

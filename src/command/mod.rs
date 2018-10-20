@@ -86,7 +86,19 @@ impl Command {
 							Some(cmd) => current_command = cmd,
 							None => match sub.get("default") {
 								Some(cmd) => current_command = cmd,
-								None => {}
+								None => {
+									//
+									// KNOWN BUG:
+									//
+									// If a command / subcommand does not have a default handler,
+									// it will not continue to search for subcommands within it.
+									//
+									// Referer: Test (test_tri_subcommand_resolution)
+									// :bug
+									//
+									println!("THIS IS A THING WEEEEE HELP ME");
+									return None
+								}
 							}
 						},
 						HandlerType::Only(cmd) => return Some(cmd)
@@ -95,6 +107,7 @@ impl Command {
 			},
 			None => {
 				// If we don't have any arguments, give the default handler.
+				println!("ANOTHER THING WEE HELP ME");
 				self.get_default_command_executor()
 			}
 		}
