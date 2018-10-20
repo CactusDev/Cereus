@@ -27,9 +27,9 @@ fn test_command_name_only_resolves_to_default_handler() {
 	let mut manager = CommandManager::new();
 	manager.add_command(command!("cactus",
 		"default" => handler!(|_context| {
-			Packet::Message { text: vec! [
+			Context::message(vec! [
 				text!("Hello!")
-			], action: false }
+			])
 		})
 	));
 
@@ -40,16 +40,10 @@ fn test_command_name_only_resolves_to_default_handler() {
 	let resolved = manager.run_command(&context);
 	assert!(resolved.is_some());
 
-	let resolved = resolved.unwrap();
-	// Ensure the packet contains the correct response
-	match resolved {
-		Packet::Message { text, action } => {
-			assert_eq!(action, false);
-			assert_eq!(text.len(), 1);
-			assert_eq!(text[0], text!("Hello!"))
-		},
-		_ => assert!(false)
-	}
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello!"),
+    ], action: false };
+    assert_eq!(resolved.unwrap().packet, first_packet);
 }
 
 #[test]
@@ -57,14 +51,14 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 	let mut manager = CommandManager::new();
 	manager.add_command(command!("cactus",
 		"default" => handler!(|_context| {
-			Packet::Message { text: vec! [
+			Context::message(vec! [
 				text!("Hello!")
-			], action: false }
+			])
 		}),
 		"test" => handler!(|_context| {
-			Packet::Message { text: vec! [
+			Context::message(vec! [
 				text!("Hello, world!")
-			], action: false }
+			])
 		})
 	));
 
@@ -72,19 +66,14 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 		text: vec! [ text!("cactus"), text!("test") ],
 		action: false
 	});
-	let resolved = manager.run_command(&context);
-	assert!(resolved.is_some());
 
-	let resolved = resolved.unwrap();
-	// Ensure the packet contains the correct response
-	match resolved {
-		Packet::Message { text, action } => {
-			assert_eq!(action, false);
-			assert_eq!(text.len(), 1);
-			assert_eq!(text[0], text!("Hello, world!"));
-		},
-		_ => assert!(false)
-	}
+	let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello, world!"),
+    ], action: false };
+	assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
 }
 
 #[test]
@@ -92,13 +81,13 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 	let mut manager = CommandManager::new();
 	manager.add_command(command!("cactus",
 		"default" => handler!(|context| {
-			Packet::Message { text: vec! [
+			Context::message(vec! [
 				text!("This is a {}!", &if let Packet::Message { ref text, action: _ } = context.packet {
 					text[1].to_string()
 				} else {
 					"Unknown".to_string()
 				})
-			], action: false }
+			])
 		})
 	));
 
@@ -109,16 +98,11 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 	let resolved = manager.run_command(&context);
 	assert!(resolved.is_some());
 
-	let resolved = resolved.unwrap();
-	// Ensure the packet contains the correct response
-	match resolved {
-		Packet::Message { text, action } => {
-			assert_eq!(action, false);
-			assert_eq!(text.len(), 1);
-			assert_eq!(text[0], text!("This is a test!"));
-		},
-		_ => assert!(false)
-	}
+    let first_packet = Packet::Message { text: vec! [
+        text!("This is a test!")
+    ], action: false };
+
+    assert_eq!(resolved.unwrap().packet, first_packet);
 }
 
 #[test]
@@ -127,21 +111,21 @@ fn test_tri_subcommand_resolution() {
 	manager.add_command(command!("cactus",
 		"test" => handler! {
 			"default" => handler!(|_context| {
-				Packet::Message { text: vec! [
+                Context::message(vec! [
 					text!("Hello!")
-				], action: false }
+                ])
 			}),
 			"another" => handler! {
 				"default" => handler!(|_context| {
-					Packet::Message { text: vec! [
+					Context::message(vec! [
 						text!("Hello!")
-					], action: false }
+					])
 				}),
 				"final" => handler! {
 					"default" => handler!(|_context| {
-						Packet::Message { text: vec! [
+                        Context::message(vec! [
 							text!("Hello!")
-						], action: false }
+						])
 					})
 				}
 			}
@@ -155,16 +139,10 @@ fn test_tri_subcommand_resolution() {
 	let resolved = manager.run_command(&context);
 	assert!(resolved.is_some());
 
-	let resolved = resolved.unwrap();
-	// Ensure the packet contains the correct response
-	match resolved {
-		Packet::Message { text, action } => {
-			assert_eq!(action, false);
-			assert_eq!(text.len(), 1);
-			assert_eq!(text[0], text!("Hello!"));
-		},
-		_ => assert!(false)
-	}
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello!")
+    ], action: false };
+    assert_eq!(resolved.unwrap().packet, first_packet);
 }
 
 #[test]
@@ -180,17 +158,19 @@ fn test_start_with_new() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Welcome to CactusBot. "));
-    		assert_eq!(text[1], emoji!("cactus"));
-    		assert_eq!(text[2], text!(" Type '!cactus help' for assistance."));
-    	},
-    	_ => assert!(false)
-    }
+    assert_eq!(result.len(), 2);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Welcome to CactusBot. "),
+        emoji!("cactus")
+    ], action: false };
+
+    let second_packet = Packet::Message { text: vec! [
+        text!("Type '!cactus help' for assistance."),
+    ], action: false };
+	
+	assert_eq!(result[0].packet, first_packet);
+	assert_eq!(result[1].packet, second_packet);
 }
 
 #[test]
@@ -206,16 +186,13 @@ fn test_start_without_new() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 2);
-    		assert_eq!(text[0], text!("CactusBot activated. "));
-    		assert_eq!(text[1], emoji!("cactus"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("CactusBot activated. "),
+        emoji!("cactus")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -231,7 +208,7 @@ fn test_follow_without_success() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_none());
+    assert_eq!(result.len(), 0);
 }
 
 
@@ -248,17 +225,14 @@ fn test_follow_with_success() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Thanks for the follow, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Thanks for the follow, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -274,17 +248,14 @@ fn test_subscribe_with_streak_one() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Thanks for subscribing, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Thanks for subscribing, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -300,17 +271,14 @@ fn test_subscribe_with_different_streak() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Thanks for resubscribing for 2 months, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Thanks for resubscribing for 2 months, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -326,7 +294,7 @@ fn test_host_without_success() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_none());
+    assert_eq!(result.len(), 0);
 }
 
 #[test]
@@ -342,17 +310,14 @@ fn test_host_with_success() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Thanks for the host, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Thanks for the host, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -368,17 +333,14 @@ fn test_join() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Welcome, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Welcome, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }
 
 #[test]
@@ -394,15 +356,12 @@ fn test_leave() {
         service: "".to_string()
     };
     let result = handler.run(&context);
-    assert!(result.is_some());
-    match result.unwrap() {
-    	Packet::Message { ref text, action } => {
-    		assert_eq!(action, false);
-    		assert_eq!(text.len(), 3);
-    		assert_eq!(text[0], text!("Thanks for watching, "));
-    		assert_eq!(text[1], tag!("Stanley"));
-    		assert_eq!(text[2], text!("!"));
-    	},
-    	_ => assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Thanks for watching, "),
+        tag!("Stanley"),
+        text!("!")
+    ], action: false };
+
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0].packet, first_packet);
 }

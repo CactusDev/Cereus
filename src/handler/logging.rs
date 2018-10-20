@@ -1,6 +1,7 @@
 
 use handler::Handler;
 use packet::*;
+use std::vec::Vec;
 
 pub struct LoggingHandler;
 
@@ -13,8 +14,8 @@ impl LoggingHandler {
 
 impl Handler for LoggingHandler {
 
-	fn run(&self, context: &Context) -> Option<Packet> {
+	fn run(&self, context: &Context) -> Vec<Context> {
 		println!("{:?}", context);
-		None
+		Vec::new()
 	}
 }

@@ -24,10 +24,13 @@ impl CommandHandler {
 
 impl Handler for CommandHandler {
 
-	fn run(&self, context: &Context) -> Option<Packet> {
+	fn run(&self, context: &Context) -> Vec<Context> {
 		match context.clone().packet {
-			Packet::Message { text, action } => self.manager.run_command(context),
-			_ => None
+			Packet::Message { text, action } => match self.manager.run_command(context) {
+				Some(context) => vec! [ context ],
+				None => vec! []
+			},
+			_ => vec! []
 		}
 	}
 }
