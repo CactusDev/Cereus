@@ -8,6 +8,19 @@ pub enum Component {
     URL(String),
 }
 
+impl Component {
+    /// Convert the component into a user-able string.
+    pub fn to_string(&self) -> String {
+        // TODO: Make this do more than just return whatever the crap we have
+        match self {
+            &Component::Text(ref text) => text.to_string(),
+            &Component::Emoji(ref emoji) => emoji.to_string(),
+            &Component::Tag(ref tag) => tag.to_string(),
+            &Component::URL(ref url) => url.to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Event {
@@ -44,6 +57,10 @@ pub struct Context {
     pub role: Option<Role>,
     pub target: Option<String>,
     pub service: String
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CommandContext {
 }
 
 pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {

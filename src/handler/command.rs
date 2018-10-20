@@ -1,6 +1,5 @@
 
 use std::{
-	rc::Rc,
 	collections::HashMap
 };
 
@@ -10,12 +9,12 @@ use packet::*;
 
 pub struct CommandHandler {
 	prefix:  String,
-	manager: Rc<CommandManager>
+	manager: CommandManager
 }
 
 impl CommandHandler {
 
-	pub fn new(prefix: &str, manager: Rc<CommandManager>) -> Self {
+	pub fn new(prefix: &str, manager: CommandManager) -> Self {
 		CommandHandler {
 			prefix: prefix.to_string(),
 			manager
@@ -25,12 +24,9 @@ impl CommandHandler {
 
 impl Handler for CommandHandler {
 
-	fn run(&mut self, context: &mut Context) -> Option<Packet> {
+	fn run(&self, context: &Context) -> Option<Packet> {
 		match context.clone().packet {
-			Packet::Message { text, action } => match Rc::get_mut(&mut self.manager) {
-				Some(manager) => manager.run_command(context),
-				None          => None  // TODO: We should error here, instead of None
-			},
+			Packet::Message { text, action } => self.manager.run_command(context),
 			_ => None
 		}
 	}

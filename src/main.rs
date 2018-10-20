@@ -7,13 +7,14 @@ extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 
-mod web;
-mod packet;
-mod handler;
+pub mod web;
+pub mod packet;
+pub mod handler;
 #[macro_use]
-mod command;
+pub mod command;
 
 use packet::*;
+use std::rc::Rc;
 
 fn main() {
     env_logger::init().unwrap();
@@ -43,21 +44,18 @@ fn main() {
     	)
     ));
 
+    let command_handler = handler::command::CommandHandler::new("!", manager);
+    let handler_handler = handler::HandlerHandler::new(vec! [Box::new(command_handler)]);
+
     let context = packet::Context {
-        packet: packet::Packet::Message { text: vec! [text!("!cactus"), text!("github"), text!("cereus")], action: false },
-        channel: "Stanley".to_string(),
+        packet: packet::Packet::Message { text: vec! [text!("cactus")], action: false },
+        channel: "".to_string(),
         user: None,
         role: None,
         target: None,
-        service: "Mixer".to_string()
+        service: "".to_string()
     };
-
-    println!("{:?}", manager.run_command(&context));
-    // let test = things.get_named_subcommand(vec! ["github".to_string(), "cereus".to_string()]);
-    // match test {
-    // 	Some(t) => println!("WE HAVE IT"),
-    // 	None    => println!("BIG SAD")
-    // };
+    println!("{:?}", handler_handler.handle(&context));
 
     // let mut w = web::WebServer::new("localhost", 1234);
     // w.listen();

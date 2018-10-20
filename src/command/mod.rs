@@ -37,7 +37,7 @@ impl Command {
 			Some((first, remaining)) => {
 				let current_command = self.commands.get(first);
 				if let None = current_command {
-					return None;
+					return self.get_default_command_executor();
 				}
 				let mut current_command: &HandlerType = current_command.unwrap();
 				let name_index = 0;
@@ -47,7 +47,24 @@ impl Command {
 					// thing that we're expecting.
 					// However, if it's still a subcommand type, then we'll just give nothing back.
 					return match current_command {
-						HandlerType::SubCommands(_) => None,
+						HandlerType::SubCommands(sub) => {
+							match sub.get("default") {
+								Some(cmd) => {
+									let cmd: &HandlerType = &**cmd;
+									match cmd {
+										HandlerType::Only(cmd) => Some(&cmd),
+										_ => {
+											// If this happens, it's a super bad internal error.
+											// In the macro, we validate that the default handler
+											// does not (because it can't) contain subcommands.
+											// :needs_error
+											None
+										}
+									}
+								},
+								None => None
+							}
+						},
 						HandlerType::Only(cmd) => Some(cmd)
 					}
 				}
@@ -67,13 +84,19 @@ impl Command {
 					match current_command {
 						HandlerType::SubCommands(sub) => match sub.get(current_name) {
 							Some(cmd) => current_command = cmd,
-							None => return None
+							None => match sub.get("default") {
+								Some(cmd) => current_command = cmd,
+								None => {}
+							}
 						},
 						HandlerType::Only(cmd) => return Some(cmd)
 					}
 				}
 			},
-			None => None
+			None => {
+				// If we don't have any arguments, give the default handler.
+				self.get_default_command_executor()
+			}
 		}
 	}
 }
@@ -123,7 +146,14 @@ macro_rules! url {
 #[macro_export]
 macro_rules! text {
 	($text:expr) => {
-		Component::Text($text.to_string())
+		text!($text, "")
+	};
+	($text:expr, $($replacer:expr),*) => {
+		{
+			let mut current = $text.to_string();
+			$(current = current.replacen("{}", $replacer, 1);)*
+			Component::Text(current)
+		}
 	}
 }
 

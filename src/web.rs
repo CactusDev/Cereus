@@ -7,6 +7,7 @@ use iron::{
 	method::Method
 };
 
+use command::manager::CommandManager;
 use packet::*;
 use serde_json;
 use std::io::Read;
@@ -46,7 +47,9 @@ impl WebServer {
 				Ok(_) => {
 					// Attempt to load the data as json
 					match serde_json::from_str::<Context>(&data) {
-						Ok(context) => Ok(Response::with((status::Ok, "worked"))),
+						Ok(context) => {
+							Ok(Response::with((status::Ok, "worked")))
+						},
 						Err(_) => Ok(Response::with((status::BadRequest, "invalid json")))
 					}
 				},
