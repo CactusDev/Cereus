@@ -324,3 +324,46 @@ fn test_subscribe_with_different_streak() {
     	_ => assert!(false)
     }
 }
+
+#[test]
+fn test_host_without_success() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Host { success: false } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_none());
+}
+
+
+#[test]
+fn test_host_with_success() {
+	let handler = EventHandler::new();
+
+	let context = Context {
+        packet: Packet::Event { kind: Event::Host { success: true } },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let result = handler.run(&context);
+    assert!(result.is_some());
+    match result.unwrap() {
+    	Packet::Message { ref text, action } => {
+    		assert_eq!(action, false);
+    		assert_eq!(text.len(), 3);
+    		assert_eq!(text[0], text!("Thanks for the host, "));
+    		assert_eq!(text[1], tag!("Stanley"));
+    		assert_eq!(text[2], text!("!"));
+    	},
+    	_ => assert!(false)
+    }
+}
