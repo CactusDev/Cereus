@@ -1,5 +1,5 @@
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data", rename_all = "camelCase")]
 pub enum Component {
     Text(String),
@@ -21,7 +21,7 @@ impl Component {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Event {
     Start { new: bool },
@@ -31,7 +31,7 @@ pub enum Event {
     Join { success: bool },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Packet {
     Message { text: Vec<Component>, action: bool },
@@ -49,7 +49,7 @@ pub enum Role {
     Owner,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 pub struct Context {
     pub packet: Packet,
     pub channel: String,
@@ -57,10 +57,6 @@ pub struct Context {
     pub role: Option<Role>,
     pub target: Option<String>,
     pub service: String
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct CommandContext {
 }
 
 pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
