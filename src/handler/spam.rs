@@ -55,7 +55,7 @@ impl Handler for SpamHandler {
 		//
 		// TODO: Pull these values from the API user configuration
 
-		if let Packet::Message { ref text, action } = context.packet {
+		if let Packet::Message { ref text, action: _ } = context.packet {
 			let caps = caps_score(&text);
 			if caps > 16 {
 				return vec! [

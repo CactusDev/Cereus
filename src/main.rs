@@ -15,7 +15,6 @@ pub mod handler;
 pub mod command;
 
 use packet::*;
-use std::rc::Rc;
 
 fn main() {
     env_logger::init().unwrap();

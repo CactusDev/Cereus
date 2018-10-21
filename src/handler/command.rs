@@ -1,8 +1,4 @@
 
-use std::{
-	collections::HashMap
-};
-
 use command::manager::CommandManager;
 use handler::Handler;
 use packet::*;
@@ -26,7 +22,7 @@ impl Handler for CommandHandler {
 
 	fn run(&self, context: &Context) -> Vec<Context> {
 		match context.clone().packet {
-			Packet::Message { text, action } => match self.manager.run_command(context) {
+			Packet::Message { text: _, action: _ } => match self.manager.run_command(context) {
 				Some(context) => vec! [ context ],
 				None => vec! []
 			},

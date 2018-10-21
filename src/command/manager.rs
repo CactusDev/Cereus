@@ -22,7 +22,7 @@ impl CommandManager {
 	}
 
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
-		if let Packet::Message { ref text, action } = context.packet {
+		if let Packet::Message { ref text, action: _ } = context.packet {
 			return match text.split_first() {
 				Some((name, arguments)) => {
 					if let Component::Text(component_text) = name {
