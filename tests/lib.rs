@@ -6,7 +6,8 @@ use cereus::{
 	command::manager::CommandManager,
 	handler::{
 		Handler,
-		event::EventHandler
+		event::EventHandler,
+        spam::SpamHandler
 	},
 	packet::*
 };
@@ -364,4 +365,117 @@ fn test_leave() {
 
     assert_eq!(result.len(), 1);
     assert_eq!(result[0].packet, first_packet);
+}
+
+#[test]
+fn test_spam_compliant_message() {
+    let context = Context {
+        packet: Packet::Message {
+            text: vec! [
+                text!("This is a test!")
+            ], action: false
+        },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()        
+    };
+    let handler = SpamHandler::new();
+    let result = handler.run(&context);
+
+    assert_eq!(result.len(), 0);
+}
+
+#[test]
+fn test_spam_caps_message() {
+    let context = Context {
+        packet: Packet::Message {
+            text: vec! [
+                text!("WOW THESE ARE A LOT OF CAPS THAT SHOULD MAKE ANGRY"),
+            ], action: false
+        },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()
+    };
+    let handler = SpamHandler::new();
+    let result = handler.run(&context);
+
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].packet, Packet::Message { text: vec! [
+        text!("Please do not spam capital letters.")
+    ], action: false });
+
+    if let Packet::Ban { duration } = result[1].packet {
+        assert_eq!(duration, None);
+    } else {
+        assert!(false)
+    }
+}
+
+#[test]
+fn test_spam_emoji_message() {
+    let context = Context {
+        packet: Packet::Message {
+            text: vec! [
+                emoji!("cactus"),
+                emoji!("cactus"),
+                emoji!("cactus"),
+                emoji!("cactus"),
+                emoji!("cactus"),
+                emoji!("cactus"),
+                emoji!("cactus")
+            ], action: false
+        },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()        
+    };
+    let handler = SpamHandler::new();
+    let result = handler.run(&context);
+
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].packet, Packet::Message { text: vec! [
+        text!("Please do not spam emoji.")
+    ], action: false });
+
+    if let Packet::Ban { duration } = result[1].packet {
+        assert_eq!(duration, None);
+    } else {
+        assert!(false)
+    }
+}
+
+#[test]
+fn test_spam_url_message() {
+    let context = Context {
+        packet: Packet::Message {
+            text: vec! [
+                url!("google.com")
+            ], action: false
+        },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: None,
+        target: None,
+        service: "".to_string()        
+    };
+    let handler = SpamHandler::new();
+    let result = handler.run(&context);
+
+    assert_eq!(result.len(), 2);
+    assert_eq!(result[0].packet, Packet::Message { text: vec! [
+        text!("Please do not post URLs.")
+    ], action: false });
+
+    if let Packet::Ban { duration } = result[1].packet {
+        assert_eq!(duration, None);
+    } else {
+        assert!(false)
+    }
 }
