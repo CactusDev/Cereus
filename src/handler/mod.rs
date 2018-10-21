@@ -5,6 +5,7 @@ use std::vec::Vec;
 pub mod command;
 pub mod logging;
 pub mod event;
+pub mod spam;
 
 pub trait Handler {
 	fn run(&self, context: &Context) -> Vec<Context>;

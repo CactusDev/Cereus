@@ -72,6 +72,17 @@ impl Context {
         }
     }
 
+    pub fn event(event: Event) -> Self {
+        Context {
+            packet: Packet::Event { kind: event },
+            channel: String::new(),
+            user: None,
+            role: None,
+            target: None,
+            service: String::new()
+        }
+    }
+
     pub fn from_packet(packet: Packet) -> Self {
         Context {
             packet,
