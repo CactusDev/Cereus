@@ -22,9 +22,19 @@ impl Handler for CommandHandler {
 
 	fn run(&self, context: &Context) -> Vec<Option<Context>> {
 		match context.clone().packet {
-			Packet::Message { text: _, action: _ } => match self.manager.run_command(context) {
-				Some(context) => vec! [ Some(context) ],  // TODO: Multi-return command context
-				None => vec! []
+			Packet::Message { text, action: _ } => {
+				// Check if the first text starts with the prefix
+				let first = &text[0];
+				if let Component::Text(text) = first {
+					if !text.starts_with(&self.prefix) {
+						return vec! []
+					}
+					return match self.manager.run_command(context) {
+						Some(context) => vec! [ Some(context) ],  // TODO: Multi-return command context
+						None => vec! []
+					}
+				}
+				vec! []
 			},
 			_ => vec! []
 		}

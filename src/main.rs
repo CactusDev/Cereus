@@ -52,6 +52,6 @@ fn main() {
         Box::new(logging_handler), Box::new(spam_handler), Box::new(event_handler), Box::new(command_handler)
     ]);
 
-    let mut w = web::WebServer::new("localhost", 1234, handler_handler);
+    let w = web::WebServer::new("localhost", 1234, handler_handler);
     w.listen();
 }
