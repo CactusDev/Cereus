@@ -14,7 +14,7 @@ impl LoggingHandler {
 
 impl Handler for LoggingHandler {
 
-	fn run(&self, context: &Context) -> Vec<Context> {
+	fn run(&self, context: &Context) -> Vec<Option<Context>> {
 		println!("{:?}", context);
 		Vec::new()
 	}

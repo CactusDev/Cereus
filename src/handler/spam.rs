@@ -49,7 +49,7 @@ fn contains_url(components: &Vec<Component>) -> bool {
 
 impl Handler for SpamHandler {
 
-	fn run(&self, context: &Context) -> Vec<Context> {
+	fn run(&self, context: &Context) -> Vec<Option<Context>> {
 		// TODO: Query API for offence count and change action based on this
 		// Should be something like /{channel}/offence/{offender}
 		//
@@ -59,51 +59,54 @@ impl Handler for SpamHandler {
 			let caps = caps_score(&text);
 			if caps > 16 {
 				return vec! [
-					Context::message(vec! [
+					Some(Context::message(vec! [
 						text!("Please do not spam capital letters.")
-					]),
-					Context {
+					])),
+					Some(Context {
 						packet: Packet::Ban { duration: None },
 						channel: String::new(),
 						user: None,
 						role: None,
 						target: None,
 						service: String::new()
-					}
+					}),
+					None
 				]
 			}
 
 			let emoji = count_emoji(&text);
 			if emoji > 6 {
 				return vec! [
-					Context::message(vec! [
+					Some(Context::message(vec! [
 						text!("Please do not spam emoji.")
-					]),
-					Context {
+					])),
+					Some(Context {
 						packet: Packet::Ban { duration: None },
 						channel: String::new(),
 						user: None,
 						role: None,
 						target: None,
 						service: String::new()
-					}
+					}),
+					None
 				]
 			}
 
 			let has_url = contains_url(&text);
 			if has_url {
 				return vec! [
-					Context::message(vec! [
+					Some(Context::message(vec! [
 						text!("Please do not post URLs.")
-					]),
-					Context {
+					])),
+					Some(Context {
 						packet: Packet::Ban { duration: None },
 						channel: String::new(),
 						user: None,
 						role: None,
 						target: None,
 						service: String::new()
-					}
+					}),
+					None
 				]
 			}
 		}

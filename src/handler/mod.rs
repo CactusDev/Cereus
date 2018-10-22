@@ -8,12 +8,15 @@ pub mod event;
 pub mod spam;
 
 pub trait Handler {
-	fn run(&self, context: &Context) -> Vec<Context>;
+	fn run(&self, context: &Context) -> Vec<Option<Context>>;
 }
 
 pub struct HandlerHandler {
 	handlers: Vec<Box<Handler>>
 }
+
+unsafe impl Sync for HandlerHandler {}
+unsafe impl Send for HandlerHandler {}
 
 impl HandlerHandler {
 
@@ -26,10 +29,16 @@ impl HandlerHandler {
 	pub fn handle(&self, context: &Context) -> Vec<Context> {
 		let mut contexts: Vec<Context> = Vec::new();
 
-		for handler in &self.handlers {
+		'main: for handler in &self.handlers {
 			for context in handler.run(context) {
-				// TODO: Check if this is a stop context, so we know when to stop
-				contexts.push(context);
+				match context {
+					Some(ctx) => contexts.push(ctx),
+					None => {
+						// If we don't have anything here, that means this is a stop context, and we need
+						// to quit executing handlers, and return what we have now.
+						break 'main;
+					}
+				}
 			}
 		}
 		contexts
