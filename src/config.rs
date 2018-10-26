@@ -10,15 +10,26 @@ pub enum ConfigurationError {
 	CouldNotParse
 }
 
-#[derive(Deserialize)]
-pub struct RedisConfig {
-	pub host: String,
-	pub port: i16,
-	pub password: Option<String>,
-	pub db: usize,
+impl std::fmt::Display for ConfigurationError {
+
+	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+		match self {
+			&ConfigurationError::FileNotFound => write!(f, "Could not find configuration file"),
+			&ConfigurationError::CouldNotRead => write!(f, "Could not read contents of configuration file"),
+			&ConfigurationError::CouldNotParse => write!(f, "Could not parse configuration into json")
+		}
+	}
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
+pub struct RedisConfig {
+	pub host: String,
+	pub port: u16,
+	pub password: Option<String>,
+	pub db: i64,
+}
+
+#[derive(Deserialize, Clone)]
 pub struct CereusConfiguration {
 	pub port: i16,
 	pub redis: RedisConfig

@@ -1,6 +1,8 @@
 
 use redis;
 
+use config::RedisConfig;
+
 /// Describes an item as something that can be cached.
 pub trait Cacheable {
 	fn make_cacheable(&self) -> String;
@@ -10,36 +12,30 @@ pub struct Cache {
 	cache_time: isize,
 	prefix:     String,
 
-	redis_password:   String,
-	redis_ip:         String,
-	redis_port:       u16,
-	redis_db:         i64,
+	redis_config: RedisConfig,
 	redis_connection: Option<redis::Client>
 }
 
 impl Cache {
 
-	pub fn new(cache_time: isize, cache_name: &str, ip: &str, port: u16, db: i64, password: &str) -> Self {
+	pub fn new(cache_time: isize, cache_name: &str, redis_config: &RedisConfig) -> Self {
 		let prefix = format!("cache-{}", cache_name);
-		
+
 		Cache {
 			cache_time,
 			prefix,
 
-			redis_password: password.to_string(),
-			redis_ip: ip.to_string(),
-			redis_port: port,
-			redis_db: db,
+			redis_config: redis_config.clone(),
 			redis_connection: None
 		}
 	}
 
 	fn connect_to_redis(&mut self) -> Result<(), redis::RedisError> {
-		let addr = redis::ConnectionAddr::Tcp(self.redis_ip.clone(), self.redis_port);
+		let addr = redis::ConnectionAddr::Tcp(self.redis_config.clone().host, self.redis_config.port);
 		let connection_info = redis::ConnectionInfo {
 			addr: Box::new(addr),
-			db: self.redis_db,
-			passwd: Some(self.redis_password.clone())
+			db: self.redis_config.db,
+			passwd: self.redis_config.clone().password
 		};
 		let connection = redis::Client::open(connection_info)?;
 

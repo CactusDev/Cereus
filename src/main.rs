@@ -22,7 +22,19 @@ use packet::*;
 fn main() {
     env_logger::init().unwrap();
 
-    // let c = cache::Cache::new(127, "test");
+    // TODO: Allow argument for configuration location.
+    // Load the config
+    let config = config::CereusConfiguration::new("cereus.json");
+    match config {
+        Ok(cfg) => {
+            let cache = cache::Cache::new(30, "", &cfg.redis);
+        },
+        Err(e) => {
+            println!("Could not start Cereus due to a configuration error.");
+            println!("{}", e);
+        }
+    }
+
 
     // let mut manager = command::manager::CommandManager::new();
 
