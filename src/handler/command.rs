@@ -27,12 +27,12 @@ impl Handler for CommandHandler {
 				let first = &text[0];
 				if let Component::Text(text) = first {
 					if !text.starts_with(&self.prefix) {
-						return vec! []
+						return vec! [];
 					}
 					return match self.manager.run_command(context) {
 						Some(context) => vec! [ Some(context) ],  // TODO: Multi-return command context
 						None => vec! []
-					}
+					};
 				}
 				vec! []
 			},

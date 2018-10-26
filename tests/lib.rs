@@ -170,8 +170,15 @@ fn test_start_with_new() {
         text!("Type '!cactus help' for assistance."),
     ], action: false };
 	
-	assert_eq!(result[0].packet, first_packet);
-	assert_eq!(result[1].packet, second_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
+
+    match result[1] {
+        Some(ref r) => assert_eq!(r.packet, second_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -193,7 +200,10 @@ fn test_start_without_new() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -233,7 +243,10 @@ fn test_follow_with_success() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -256,7 +269,10 @@ fn test_subscribe_with_streak_one() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -279,7 +295,10 @@ fn test_subscribe_with_different_streak() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -318,7 +337,10 @@ fn test_host_with_success() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -341,7 +363,10 @@ fn test_join() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    }
 }
 
 #[test]
@@ -364,7 +389,10 @@ fn test_leave() {
     ], action: false };
 
     assert_eq!(result.len(), 1);
-    assert_eq!(result[0].packet, first_packet);
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
 }
 
 #[test]
@@ -404,15 +432,23 @@ fn test_spam_caps_message() {
     let handler = SpamHandler::new();
     let result = handler.run(&context);
 
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[0].packet, Packet::Message { text: vec! [
-        text!("Please do not spam capital letters.")
-    ], action: false });
+    assert_eq!(result.len(), 3);
 
-    if let Packet::Ban { duration } = result[1].packet {
-        assert_eq!(duration, None);
-    } else {
-        assert!(false)
+    let first_packet = Packet::Message { text: vec! [
+        text!("Please do not spam capital letters.")
+    ], action: false };
+
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    }
+
+    match result[1] {
+        Some(ref r) => match r.packet {
+            Packet::Ban { duration } => assert_eq!(duration, None),
+            _ => assert!(false)
+        },
+        None => assert!(false)
     }
 }
 
@@ -439,15 +475,23 @@ fn test_spam_emoji_message() {
     let handler = SpamHandler::new();
     let result = handler.run(&context);
 
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[0].packet, Packet::Message { text: vec! [
-        text!("Please do not spam emoji.")
-    ], action: false });
+    assert_eq!(result.len(), 3);
 
-    if let Packet::Ban { duration } = result[1].packet {
-        assert_eq!(duration, None);
-    } else {
-        assert!(false)
+    let first_packet = Packet::Message { text: vec! [
+        text!("Please do not spam emoji.")
+    ], action: false };
+
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
+
+    match result[1] {
+        Some(ref r) => match r.packet {
+            Packet::Ban { duration } => assert_eq!(duration, None),
+            _ => assert!(false)
+        },
+        None => assert!(false)
     }
 }
 
@@ -468,14 +512,22 @@ fn test_spam_url_message() {
     let handler = SpamHandler::new();
     let result = handler.run(&context);
 
-    assert_eq!(result.len(), 2);
-    assert_eq!(result[0].packet, Packet::Message { text: vec! [
-        text!("Please do not post URLs.")
-    ], action: false });
+    assert_eq!(result.len(), 3);
 
-    if let Packet::Ban { duration } = result[1].packet {
-        assert_eq!(duration, None);
-    } else {
-        assert!(false)
-    }
+    let first_packet = Packet::Message { text: vec! [
+        text!("Please do not post URLs.")
+    ], action: false };
+
+    match result[0] {
+        Some(ref r) => assert_eq!(r.packet, first_packet),
+        None => assert!(false)
+    };
+
+    match result[1] {
+        Some(ref r) => match r.packet {
+            Packet::Ban { duration } => assert_eq!(duration, None),
+            _ => assert!(false)
+        },
+        None => assert!(false)
+    };
 }
