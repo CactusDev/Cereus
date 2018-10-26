@@ -1,6 +1,7 @@
 
 extern crate env_logger;
 extern crate iron;
+extern crate redis;
 
 #[macro_use]
 extern crate serde_derive;
@@ -14,45 +15,48 @@ pub mod handler;
 #[macro_use]
 pub mod command;
 pub mod cache;
+pub mod config;
 
 use packet::*;
 
 fn main() {
     env_logger::init().unwrap();
 
-    let mut manager = command::manager::CommandManager::new();
+    // let c = cache::Cache::new(127, "test");
 
-    manager.add_command(command!("cactus",
-    	"default" => handler!(|_context| {
-    		Context::message(vec! [
-    			text!("Ohai! I'm CactusBot! "),
-    			emoji!("cactus")
-    		])
-    	}),
-    	"github" => handler!(
-    		"default" => handler!(|_context| {
-    			Context::message(vec! [
-    				text!("We're open source! Check it out at: "),
-    				url!("https://github.com/CactusDev")
-    			])
-    		}),
-    		"cereus" => handler!(|_context| {
-    			Context::message(vec! [
-    				text!("Checkout Cereus at: "),
-    				url!("https://github.com/CactusDev/Cereus")
-    			])
-    		})
-    	)
-    ));
+    // let mut manager = command::manager::CommandManager::new();
 
-    let logging_handler = handler::logging::LoggingHandler::new();
-    let event_handler = handler::event::EventHandler::new();
-    let command_handler = handler::command::CommandHandler::new("!", manager);
-    let spam_handler = handler::spam::SpamHandler::new();
-    let handler_handler = handler::HandlerHandler::new(vec! [
-        Box::new(logging_handler), Box::new(spam_handler), Box::new(event_handler), Box::new(command_handler)
-    ]);
+    // manager.add_command(command!("cactus",
+    // 	"default" => handler!(|_context| {
+    // 		Context::message(vec! [
+    // 			text!("Ohai! I'm CactusBot! "),
+    // 			emoji!("cactus")
+    // 		])
+    // 	}),
+    // 	"github" => handler!(
+    // 		"default" => handler!(|_context| {
+    // 			Context::message(vec! [
+    // 				text!("We're open source! Check it out at: "),
+    // 				url!("https://github.com/CactusDev")
+    // 			])
+    // 		}),
+    // 		"cereus" => handler!(|_context| {
+    // 			Context::message(vec! [
+    // 				text!("Checkout Cereus at: "),
+    // 				url!("https://github.com/CactusDev/Cereus")
+    // 			])
+    // 		})
+    // 	)
+    // ));
 
-    let w = web::WebServer::new("localhost", 1234, handler_handler);
-    w.listen();
+    // let logging_handler = handler::logging::LoggingHandler::new();
+    // let event_handler = handler::event::EventHandler::new();
+    // let command_handler = handler::command::CommandHandler::new("!", manager);
+    // let spam_handler = handler::spam::SpamHandler::new();
+    // let handler_handler = handler::HandlerHandler::new(vec! [
+    //     Box::new(logging_handler), Box::new(spam_handler), Box::new(event_handler), Box::new(command_handler)
+    // ]);
+
+    // let w = web::WebServer::new("localhost", 1234, handler_handler);
+    // w.listen();
 }
