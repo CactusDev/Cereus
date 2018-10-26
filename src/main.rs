@@ -17,6 +17,8 @@ pub mod command;
 pub mod cache;
 pub mod config;
 
+use packet::Context;
+
 fn main() {
     env_logger::init().unwrap();
 

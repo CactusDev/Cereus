@@ -109,7 +109,7 @@ pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
 #[macro_export]
 macro_rules! url {
     ($url:expr) => {
-        Component::URL($url.to_string())
+        $crate::packet::Component::URL($url.to_string())
     }
 }
 
@@ -122,7 +122,7 @@ macro_rules! text {
         {
             let mut current = $text.to_string();
             $(current = current.replacen("{}", $replacer, 1);)*
-            Component::Text(current)
+            $crate::packet::Component::Text(current)
         }
     }
 }
@@ -130,13 +130,13 @@ macro_rules! text {
 #[macro_export]
 macro_rules! emoji {
     ($emoji:expr) => {
-        Component::Emoji($emoji.to_string())
+        $crate::packet::Component::Emoji($emoji.to_string())
     }
 }
 
 #[macro_export]
 macro_rules! tag {
     ($tag:expr) => {
-        Component::Tag($tag.to_string())
+        $crate::packet::Component::Tag($tag.to_string())
     }
 }
