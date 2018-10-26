@@ -1,10 +1,12 @@
 
 use redis;
+use redis::Commands;
 
 use config::RedisConfig;
 
 /// Describes an item as something that can be cached.
 pub trait Cacheable {
+	fn name(&self) -> String;
 	fn make_cacheable(&self) -> String;
 }
 
@@ -19,7 +21,7 @@ pub struct Cache {
 impl Cache {
 
 	pub fn new(cache_time: isize, cache_name: &str, redis_config: &RedisConfig) -> Self {
-		let prefix = format!("cache-{}", cache_name);
+		let prefix = format!("cache:{}", cache_name);
 
 		Cache {
 			cache_time,
@@ -45,13 +47,36 @@ impl Cache {
 	}
 
 	fn get_cacheable_name(&self, name: &str) -> String {
-		format!("{}-{}", &self.prefix, name)
+		format!("{}:{}", &self.prefix, name)
 	}
 
-	fn cache(&mut self, object: Box<Cacheable>) -> Result<(), redis::RedisError> {
+	pub fn cache(&mut self, object: Box<Cacheable>) -> Result<(), redis::RedisError> {
+		if let None = self.redis_connection {
+			// Connect to redis if we're not currently
+			self.connect_to_redis()?;
+		}
+		// Get the cacheable name for this
+		let name = self.get_cacheable_name(&object.name());
 		let stringified = object.make_cacheable();
-		println!("{}", &stringified);
-		// Now, we need to toss this into Redis.
+
+		match &self.redis_connection {
+			Some(ref connection) => connection.set(name, stringified)?,
+			None => {}
+		}
 		Ok(())
+	}
+
+	pub fn get(&mut self, name: String) -> Result<String, String> {
+		if let None = self.redis_connection {
+			// Connect to redis if we're not currently
+			self.connect_to_redis().map_err(|err| err.category().to_string())?;
+		}
+		// Get the cacheable name for this
+		let name = self.get_cacheable_name(&name);
+
+		match &self.redis_connection {
+			Some(ref connection) => connection.get(name).map_err(|err| err.category().to_string()),
+			None => Err("could not get redis connection".to_string())
+		}
 	}
 }

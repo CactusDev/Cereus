@@ -17,7 +17,22 @@ pub mod command;
 pub mod cache;
 pub mod config;
 
-use packet::*;
+#[derive(Serialize)]
+struct Test {
+    a: u32,
+    b: String
+}
+
+impl cache::Cacheable for Test {
+
+    fn name(&self) -> String {
+        "stanley".to_string()
+    }
+
+    fn make_cacheable(&self) -> String {
+        serde_json::to_string(self).unwrap()
+    }
+}
 
 fn main() {
     env_logger::init().unwrap();
@@ -27,14 +42,19 @@ fn main() {
     let config = config::CereusConfiguration::new("cereus.json");
     match config {
         Ok(cfg) => {
-            let cache = cache::Cache::new(30, "", &cfg.redis);
+            let mut cache = cache::Cache::new(30, "channel", &cfg.redis);
+            let t = Test {
+                a: 127,
+                b: "Testing".to_string()
+            };
+            println!("{:?}", cache.cache(Box::new(t)));
+            println!("{:?}", cache.get("stanley".to_string()))
         },
         Err(e) => {
             println!("Could not start Cereus due to a configuration error.");
             println!("{}", e);
         }
     }
-
 
     // let mut manager = command::manager::CommandManager::new();
 
