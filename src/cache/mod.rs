@@ -80,3 +80,7 @@ impl Cache {
 		}
 	}
 }
+
+mod user;
+mod quote;
+mod command;
