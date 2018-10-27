@@ -1,10 +1,14 @@
 
 use std::collections::HashMap;
+use rand::{
+	thread_rng,
+	seq::SliceRandom
+};
+
 use command::Command;
+use packet::{Packet, Context, Component, string_components_to_string};
 
 use regex::Regex;
-
-use packet::{Packet, Context, Component, string_components_to_string};
 
 #[derive(Debug)]
 enum DynamicCommandError {
@@ -12,12 +16,15 @@ enum DynamicCommandError {
 	RequestError(reqwest::Error)
 }
 
+type ModifierFunction = Fn(&String) -> String;
+
 pub struct CommandManager {
 	commands: HashMap<String, Command>,
 	client: reqwest::Client,
 	api_base: String,
 	argn_regex: Regex,
-	args_regex: Regex
+	args_regex: Regex,
+	modifiers: HashMap<String, Box<ModifierFunction>>
 }
 
 struct DynamicCommandMeta {
@@ -32,7 +39,43 @@ impl CommandManager {
 			client:   reqwest::Client::new(),
 			api_base: api_base.to_string(),
 			argn_regex: Regex::new(r#"%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%"#).unwrap(),
-			args_regex: Regex::new(r#"%ARGS(?:=([^|]+))?((?:\|\w+)+)?%"#).unwrap()
+			args_regex: Regex::new(r#"%ARGS(?:=([^|]+))?((?:\|\w+)+)?%"#).unwrap(),
+			modifiers: {
+				let mut modifiers: HashMap<String, Box<ModifierFunction>> = HashMap::new();
+
+				modifiers.insert("upper".to_string(), Box::new(|s: &String| s.to_uppercase()));
+				modifiers.insert("lower".to_string(), Box::new(|s: &String| s.to_lowercase()));
+
+				modifiers.insert("title".to_string(), Box::new(|s: &String| {
+					let mut chars = s.chars();
+					match chars.next() {
+						Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
+						None => String::new()
+					}
+				}));
+
+				modifiers.insert("reverse".to_string(), Box::new(|s| s.chars()
+					.rev().collect::<String>()));
+
+				modifiers.insert("tag".to_string(), Box::new(|s| {
+					let (first, remaining) = s.split_at(0);
+					if first == "@" {
+						return remaining.to_string();
+					}
+					s.to_string()
+				}));
+
+				modifiers.insert("shuffle".to_string(), Box::new(|s| {
+					let mut chars: Vec<char> = s.chars().collect();
+					let slice = chars.as_mut_slice();
+					let mut rng = thread_rng();
+					slice.shuffle(&mut rng);
+
+					slice.iter().map(|s| *s).collect::<String>()
+				}));
+
+				modifiers
+			}
 		}
 	}
 

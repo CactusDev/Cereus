@@ -4,6 +4,7 @@ extern crate iron;
 extern crate redis;
 extern crate reqwest;
 extern crate regex;
+extern crate rand;
 
 #[macro_use]
 extern crate serde_derive;
