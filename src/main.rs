@@ -2,6 +2,7 @@
 extern crate env_logger;
 extern crate iron;
 extern crate redis;
+extern crate reqwest;
 
 #[macro_use]
 extern crate serde_derive;
@@ -27,7 +28,7 @@ fn main() {
     let config = config::CereusConfiguration::new("cereus.json");
     match config {
         Ok(cfg) => {
-            let mut manager = command::manager::CommandManager::new();
+            let mut manager = command::manager::CommandManager::new("");
 
             manager.add_command(command!("cactus",
                 "default" => handler!(|_context| {
