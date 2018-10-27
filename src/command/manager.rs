@@ -20,6 +20,10 @@ pub struct CommandManager {
 	args_regex: Regex
 }
 
+struct DynamicCommandMeta {
+	count: usize
+}
+
 impl CommandManager {
 
 	pub fn new(api_base: &str) -> Self {
@@ -27,8 +31,8 @@ impl CommandManager {
 			commands: HashMap::new(),
 			client:   reqwest::Client::new(),
 			api_base: api_base.to_string(),
-			argn_regex: Regex::new(r#"%ARG(\d+)(?:((?:\|\w+)+))?%"#).unwrap(),
-			args_regex: Regex::new(r#"%ARGS((?:\|\w+)+)?%"#).unwrap()
+			argn_regex: Regex::new(r#"%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%"#).unwrap(),
+			args_regex: Regex::new(r#"%ARGS(?:=([^|]+))?((?:\|\w+)+)?%"#).unwrap()
 		}
 	}
 
@@ -57,6 +61,40 @@ impl CommandManager {
 				}
 			},
 			_ => return Err(DynamicCommandError::FirstElementMustBeText)
+		}
+	}
+
+	fn fill_response_formatters(&self, context: &Context, arguments: Vec<Context>, meta: Option<DynamicCommandMeta>) -> Option<Context> {
+		match context.packet {
+			Packet::Message { ref text, action } => {
+				let mut filled_components: Vec<Component> = vec! [];
+
+				for component in text {
+					match component.clone() {
+						Component::Text(ref text) => {
+							let mut text = text.to_string();
+
+							// Fill %USER% if we have it.
+							if let Some(ref user) = &context.user {
+								text = text.replace("%USER%", user);
+							}
+							// Attempt to fill the count. This is only present on dynamics.
+							if let Some(ref meta) = meta {
+								// Since we were given meta, we know this is a dynamic command,
+								// meaning we have the count.
+								text = text.replace("%COUNT%", &meta.count.to_string());
+							}
+							// Next, fill the channel.
+							text = text.replace("%CHANNEL%", &context.channel);
+							// Finally, lets store the component.
+							filled_components.push(Component::Text(text));
+						},
+						_ => filled_components.push(component.clone())
+					}
+				}
+				None
+			},
+			_ => None
 		}
 	}
 
