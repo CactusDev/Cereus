@@ -3,6 +3,7 @@ extern crate env_logger;
 extern crate iron;
 extern crate redis;
 extern crate reqwest;
+extern crate regex;
 
 #[macro_use]
 extern crate serde_derive;

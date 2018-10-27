@@ -2,6 +2,8 @@
 use std::collections::HashMap;
 use command::Command;
 
+use regex::Regex;
+
 use packet::{Packet, Context, Component, string_components_to_string};
 
 #[derive(Debug)]
@@ -13,7 +15,9 @@ enum DynamicCommandError {
 pub struct CommandManager {
 	commands: HashMap<String, Command>,
 	client: reqwest::Client,
-	api_base: String
+	api_base: String,
+	argn_regex: Regex,
+	args_regex: Regex
 }
 
 impl CommandManager {
@@ -22,7 +26,9 @@ impl CommandManager {
 		CommandManager {
 			commands: HashMap::new(),
 			client:   reqwest::Client::new(),
-			api_base: api_base.to_string()
+			api_base: api_base.to_string(),
+			argn_regex: Regex::new(r#"%ARG(\d+)(?:((?:\|\w+)+))?%"#).unwrap(),
+			args_regex: Regex::new(r#"%ARGS((?:\|\w+)+)?%"#).unwrap()
 		}
 	}
 
