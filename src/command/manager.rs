@@ -8,7 +8,7 @@ use rand::{
 use command::Command;
 use packet::{Packet, Context, Component, string_components_to_string};
 
-use regex::Regex;
+use regex::{Regex, Captures};
 
 #[derive(Debug)]
 enum DynamicCommandError {
@@ -88,6 +88,75 @@ impl CommandManager {
 		format!("{}{}", &self.api_base, endpoint)
 	}
 
+	fn modify(&self, argument: String, modifiers: Vec<String>) -> String {
+		let mut argument = argument;
+		for modifier in modifiers {
+			match &self.modifiers.get(&modifier) {
+				Some(ref function) => argument = function(&argument),
+				None => continue
+			}
+		}
+		argument
+	}
+
+	fn sub_argn(&self, args: Vec<Component>, matches: Captures) -> Option<String> {
+		let argn      = matches.get(1);
+		let default   = matches.get(2);
+		let modifiers = matches.get(3);
+
+		if argn.is_none() {
+			return None;
+		}
+
+		let argn = argn.unwrap().as_str().parse::<usize>().unwrap();
+
+		let mut result: Option<String> = None;
+
+		// TODO: this could be optimized
+		result = if argn < args.len() {
+			Some(args[argn].to_string())
+		} else {
+			if let Some(default) = default {
+				Some(default.as_str().to_string())
+			} else {
+				None
+			}
+		};
+
+		if result.is_none() {
+			return None;
+		}
+
+		if let Some(modifiers) = modifiers {
+			let modifiers = modifiers.as_str().split("|").skip(1)
+				.map(|s| s.to_string()).collect::<Vec<String>>();
+			// Attempt to modify the result
+			return Some(self.modify(result.unwrap(), modifiers));
+		}
+		return result;
+	}
+
+	fn sub_args(&self, args: Vec<Component>, matches: Captures) -> Option<String> {
+		let default   = matches.get(1);
+		let modifiers = matches.get(2);
+
+		// Check if we were provided any arguments
+		if args.len() == 0 {
+			// Since we weren't provided anything, there's nothing we can do here
+			return None;
+		}
+
+		let result: String = args.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(" ");
+
+		if let Some(modifiers) = modifiers {
+			let modifiers = modifiers.as_str().split("|").skip(1)
+				.map(|s| s.to_string()).collect::<Vec<String>>();
+			// Attempt to modify the result
+			return Some(self.modify(result, modifiers));
+		}
+		return Some(result);
+	}
+
 	fn try_dynamic_command(&self, channel: &str, name: &Component) -> Result<Context, DynamicCommandError> {
 		// The name of the command should be the first component, so lets pull that out
 		match name {
@@ -107,32 +176,44 @@ impl CommandManager {
 		}
 	}
 
-	fn fill_response_formatters(&self, context: &Context, arguments: Vec<Context>, meta: Option<DynamicCommandMeta>) -> Option<Context> {
+	fn fill_response_formatters(&self, context: &Context, meta: Option<DynamicCommandMeta>) -> Option<Context> {
 		match context.packet {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
 
-				for component in text {
-					match component.clone() {
-						Component::Text(ref text) => {
-							let mut text = text.to_string();
+				if let Some((first, args)) = text.split_first() {
+					for component in text {
+						match component.clone() {
+							Component::Text(ref text) => {
+								let mut text = text.to_string();
 
-							// Fill %USER% if we have it.
-							if let Some(ref user) = &context.user {
-								text = text.replace("%USER%", user);
-							}
-							// Attempt to fill the count. This is only present on dynamics.
-							if let Some(ref meta) = meta {
-								// Since we were given meta, we know this is a dynamic command,
-								// meaning we have the count.
-								text = text.replace("%COUNT%", &meta.count.to_string());
-							}
-							// Next, fill the channel.
-							text = text.replace("%CHANNEL%", &context.channel);
-							// Finally, lets store the component.
-							filled_components.push(Component::Text(text));
-						},
-						_ => filled_components.push(component.clone())
+								// Fill %USER% if we have it.
+								if let Some(ref user) = &context.user {
+									text = text.replace("%USER%", user);
+								}
+								// Attempt to fill the count. This is only present on dynamics.
+								if let Some(ref meta) = meta {
+									// Since we were given meta, we know this is a dynamic command,
+									// meaning we have the count.
+									text = text.replace("%COUNT%", &meta.count.to_string());
+								}
+								// Next, fill the channel.
+								text = text.replace("%CHANNEL%", &context.channel);
+
+								// Then, args / argn
+								if let Some(caps) = self.argn_regex.captures(&text.clone()) {
+									text = self.sub_argn(args.to_vec(), caps).unwrap_or(String::new());  // TODO: do we want this?
+								}
+
+								if let Some(caps) = self.args_regex.captures(&text.clone()) {
+									text = self.sub_args(args.to_vec(), caps).unwrap_or(String::new());  // TODO: do we want this?
+								}
+
+								// Finally, lets store the component.
+								filled_components.push(Component::Text(text));
+							},
+							_ => filled_components.push(component.clone())
+						}
 					}
 				}
 				None

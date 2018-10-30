@@ -93,6 +93,22 @@ impl Context {
             service: String::new()
         }
     }
+
+    pub fn sub(&mut self, pattern: regex::Regex, repl: &str) -> Option<String> {
+        if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
+
+            for (i, chunk) in text.clone().iter().enumerate() {
+                match chunk {
+                    Component::Text(t) => {
+                        let filled = pattern.replace(t, repl);
+                        text[i] = Component::Text(filled.to_string());
+                    },
+                    _ => continue
+                }
+            }
+        }
+        None
+    }
 }
 
 pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
