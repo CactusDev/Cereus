@@ -216,7 +216,10 @@ impl CommandManager {
 						}
 					}
 				}
-				None
+
+				let mut finished_context = context.clone();
+				finished_context.packet = Packet::Message { text: filled_components, action: false };  // TODO: This somehow needs to be passed down
+				return Some(finished_context);
 			},
 			_ => None
 		}
@@ -240,7 +243,9 @@ impl CommandManager {
 								// going to check the API / Cache to see if we have a
 								// custom command or an alias by this name.
 								match self.try_dynamic_command(&context.channel, name) {
-									Ok(context) => return Some(context),
+									Ok(context) => {
+										return Some(context)
+									},
 									Err(err) => {
 										println!("Could not run command: {:?}", err);
 										return None;
