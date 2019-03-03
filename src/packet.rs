@@ -113,6 +113,13 @@ impl Context {
         }
         None
     }
+
+    pub fn merge(mut self, context: &Context) -> Context {
+        self.user = context.user.clone();
+        self.channel = context.channel.clone();
+    
+        self
+    }
 }
 
 pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {

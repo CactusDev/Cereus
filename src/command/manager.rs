@@ -79,13 +79,13 @@ impl CommandManager {
 		}
 	}
 
+	pub fn get_api_url(&self, endpoint: &str) -> String {
+		format!("{}/{}", &self.api_base, endpoint)
+	}
+
 	pub fn add_command(&mut self, command: Command) {
 		let name = &command.name.clone();
 		self.commands.insert(name.to_string(), command);
-	}
-
-	fn get_api_url(&self, endpoint: &str) -> String {
-		format!("{}/{}", &self.api_base, endpoint)
 	}
 
 	fn modify(&self, argument: String, modifiers: Vec<String>) -> String {
@@ -99,12 +99,13 @@ impl CommandManager {
 		argument
 	}
 
-	fn sub_argn(&self, args: Vec<Component>, matches: Captures) -> Option<String> {
+	fn sub_argn(&self, args: Vec<Component>, matches: &Captures) -> Option<String> {
 		let argn      = matches.get(1);
 		let default   = matches.get(2);
 		let modifiers = matches.get(3);
 
 		if argn.is_none() {
+			println!("THAR BE NO THAANG");
 			return None;
 		}
 
@@ -113,8 +114,9 @@ impl CommandManager {
 		let mut result: Option<String> = None;
 
 		// TODO: this could be optimized
-		result = if argn < args.len() {
-			Some(args[argn].to_string())
+		println!("ARGN: {}, ARGS: {}, ALL ARGS: {:?}", argn - 1, args.len(), args);
+		result = if argn - 1 < args.len() {
+			Some(args[argn - 1].to_string())
 		} else {
 			if let Some(default) = default {
 				Some(default.as_str().to_string())
@@ -124,36 +126,43 @@ impl CommandManager {
 		};
 
 		if result.is_none() {
+			println!("RESULTO IS NO");
 			return None;
 		}
 
 		if let Some(modifiers) = modifiers {
+			println!("MERDIFER");
 			let modifiers = modifiers.as_str().split("|").skip(1)
 				.map(|s| s.to_string()).collect::<Vec<String>>();
 			// Attempt to modify the result
 			return Some(self.modify(result.unwrap(), modifiers));
 		}
+		println!("THANG {:?}", result);
 		return result;
 	}
 
-	fn sub_args(&self, args: Vec<Component>, matches: Captures) -> Option<String> {
+	fn sub_args(&self, args: Vec<Component>, matches: &Captures) -> Option<String> {
 		let default   = matches.get(1);
 		let modifiers = matches.get(2);
+		println!("RSEITNRST");
 
 		// Check if we were provided any arguments
 		if args.len() == 0 {
+			println!("THE NOTHING");
 			// Since we weren't provided anything, there's nothing we can do here
 			return None;
 		}
 
-		let result: String = args.iter().map(|a| a.to_string()).collect::<Vec<String>>().join(" ");
+		let result: String = args.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(" ");
 
 		if let Some(modifiers) = modifiers {
 			let modifiers = modifiers.as_str().split("|").skip(1)
 				.map(|s| s.to_string()).collect::<Vec<String>>();
 			// Attempt to modify the result
+			println!("MODIFY");
 			return Some(self.modify(result, modifiers));
 		}
+		println!("NOIFY");
 		return Some(result);
 	}
 
@@ -161,7 +170,7 @@ impl CommandManager {
 		// The name of the command should be the first component, so lets pull that out
 		match name {
 			Component::Text(ref command_name) => {
-				let endpoint = format!("/channel/{}/command/{}", channel, command_name);
+				let endpoint = format!("channel/{}/command/{}", channel, command_name);
 				let mut response = self.client.get(&self.get_api_url(&endpoint))
 					.send().map_err(|err| DynamicCommandError::RequestError(err))?;
 				match response.status().is_success() {
@@ -179,12 +188,13 @@ impl CommandManager {
 		}
 	}
 
-	fn fill_response_formatters(&self, context: &Context, meta: Option<DynamicCommandMeta>) -> Option<Context> {
+	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>, meta: Option<DynamicCommandMeta>) -> Option<Context> {
 		match context.packet {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
+				println!("HERE BE TEXT: {:?}", text);
 
-				if let Some((first, args)) = text.split_first() {
+				if let Some((_command_name, args)) = input.split_first() {
 					for component in text {
 						match component.clone() {
 							Component::Text(ref text) => {
@@ -205,11 +215,11 @@ impl CommandManager {
 
 								// Then, args / argn
 								if let Some(caps) = self.argn_regex.captures(&text.clone()) {
-									text = self.sub_argn(args.to_vec(), caps).unwrap_or(String::new());  // TODO: do we want this?
+									text = self.argn_regex.replace(&text, |caps: &Captures| self.sub_argn(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
 								}
 
 								if let Some(caps) = self.args_regex.captures(&text.clone()) {
-									text = self.sub_args(args.to_vec(), caps).unwrap_or(String::new());  // TODO: do we want this?
+									text = self.args_regex.replace(&text, |caps: &Captures| self.sub_args(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
 								}
 
 								// Finally, lets store the component.
@@ -237,16 +247,16 @@ impl CommandManager {
 						match self.commands.get(&component_text) {
 							Some(cmd) => {
 								match cmd.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-									Some(handler) => return Some(handler(context)),
+									Some(handler) => return self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None),
 									None => return None
 								}
 							},
 							None => {
 								// If we don't have a builtin with this name, then we're
-								// going to check the API / Cache to see if we have a
+								// going to check the API to see if we have a
 								// custom command or an alias by this name.
 								match self.try_dynamic_command(&context.channel, name) {
-									Ok(context) => return Some(context),
+									Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None),
 									Err(err) => {
 										println!("Could not run command: {:?}", err);
 										return None;
