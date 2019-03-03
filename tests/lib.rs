@@ -189,7 +189,7 @@ fn test_command_args_formatter() {
     ));
 
     let context = get_example_text_only_context(Packet::Message {
-        text: vec! [ text!("cmd"), text!("test") ],
+        text: vec! [ text!("cmd"), text!("test"), text!("ing") ],
         action: false
     });
 
@@ -197,7 +197,8 @@ fn test_command_args_formatter() {
 
     let first_packet = Packet::Message { text: vec! [
         text!("Hello "),
-        text!("test!"),
+        text!("test "),
+        text!("ing!")
     ], action: false };
     assert!(resolved.is_some());
     assert_eq!(resolved.unwrap().packet, first_packet);
@@ -719,5 +720,3 @@ fn test_api_url_getting() {
     let manager = CommandManager::new(base);
     assert_eq!(manager.get_api_url("command"), base.to_owned() + "/command")
 }
-
-

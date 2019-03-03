@@ -105,16 +105,13 @@ impl CommandManager {
 		let modifiers = matches.get(3);
 
 		if argn.is_none() {
-			println!("THAR BE NO THAANG");
 			return None;
 		}
 
 		let argn = argn.unwrap().as_str().parse::<usize>().unwrap();
-
 		let mut result: String = String::new();
 
 		// TODO: this could be optimized
-		println!("ARGN: {}, ARGS: {}, ALL ARGS: {:?}", argn - 1, args.len(), args);
 		if argn - 1 < args.len() {
 			result = args[argn - 1].to_string()
 		} else {
@@ -175,7 +172,6 @@ impl CommandManager {
 		match context.packet {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
-				println!("HERE BE TEXT: {:?}", text);
 
 				if let Some((_command_name, args)) = input.split_first() {
 					for component in text {
