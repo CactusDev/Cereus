@@ -231,6 +231,33 @@ fn test_command_argn_formatter() {
 }
 
 #[test]
+fn test_command_argn_formatter_out_of_range() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG2%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
 fn test_command_argn_formatter_with_additional_dangling_arguments() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",

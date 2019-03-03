@@ -111,47 +111,32 @@ impl CommandManager {
 
 		let argn = argn.unwrap().as_str().parse::<usize>().unwrap();
 
-		let mut result: Option<String> = None;
+		let mut result: String = String::new();
 
 		// TODO: this could be optimized
 		println!("ARGN: {}, ARGS: {}, ALL ARGS: {:?}", argn - 1, args.len(), args);
-		result = if argn - 1 < args.len() {
-			Some(args[argn - 1].to_string())
+		if argn - 1 < args.len() {
+			result = args[argn - 1].to_string()
 		} else {
 			if let Some(default) = default {
-				Some(default.as_str().to_string())
+				result = default.as_str().to_string()
 			} else {
-				None
+				return None
 			}
-		};
-
-		if result.is_none() {
-			println!("RESULTO IS NO");
-			return None;
 		}
 
 		if let Some(modifiers) = modifiers {
-			println!("MERDIFER");
 			let modifiers = modifiers.as_str().split("|").skip(1)
 				.map(|s| s.to_string()).collect::<Vec<String>>();
 			// Attempt to modify the result
-			return Some(self.modify(result.unwrap(), modifiers));
+			return Some(self.modify(result, modifiers));
 		}
-		println!("THANG {:?}", result);
-		return result;
+		return Some(result);
 	}
 
 	fn sub_args(&self, args: Vec<Component>, matches: &Captures) -> Option<String> {
 		let default   = matches.get(1);
 		let modifiers = matches.get(2);
-		println!("RSEITNRST");
-
-		// Check if we were provided any arguments
-		if args.len() == 0 {
-			println!("THE NOTHING");
-			// Since we weren't provided anything, there's nothing we can do here
-			return None;
-		}
 
 		let result: String = args.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(" ");
 
@@ -159,10 +144,8 @@ impl CommandManager {
 			let modifiers = modifiers.as_str().split("|").skip(1)
 				.map(|s| s.to_string()).collect::<Vec<String>>();
 			// Attempt to modify the result
-			println!("MODIFY");
 			return Some(self.modify(result, modifiers));
 		}
-		println!("NOIFY");
 		return Some(result);
 	}
 
@@ -188,7 +171,7 @@ impl CommandManager {
 		}
 	}
 
-	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>, meta: Option<DynamicCommandMeta>) -> Option<Context> {
+	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>, meta: Option<DynamicCommandMeta>) -> Result<Context, ()> {
 		match context.packet {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
@@ -232,9 +215,9 @@ impl CommandManager {
 
 				let mut finished_context = context.clone();
 				finished_context.packet = Packet::Message { text: filled_components, action: false };  // TODO: This somehow needs to be passed down
-				return Some(finished_context);
+				return Ok(finished_context);
 			},
-			_ => None
+			_ => Err(())
 		}
 	}
 
@@ -247,7 +230,7 @@ impl CommandManager {
 						match self.commands.get(&component_text) {
 							Some(cmd) => {
 								match cmd.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-									Some(handler) => return self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None),
+									Some(handler) => return self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None).ok(),
 									None => return None
 								}
 							},
@@ -256,7 +239,7 @@ impl CommandManager {
 								// going to check the API to see if we have a
 								// custom command or an alias by this name.
 								match self.try_dynamic_command(&context.channel, name) {
-									Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None),
+									Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
 									Err(err) => {
 										println!("Could not run command: {:?}", err);
 										return None;
