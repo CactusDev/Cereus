@@ -19,13 +19,14 @@ fn get_example_text_only_context(packet: Packet) -> Context {
 		user: None,
 		role: None,
 		target: None,
-		service: "Twitch".to_string()
+		service: "Twitch".to_string(),
+        count: None
 	}
 }
 
 #[test]
 fn test_command_name_only_resolves_to_default_handler() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"default" => handler!(|_context| {
 			Context::message(vec! [
@@ -49,7 +50,7 @@ fn test_command_name_only_resolves_to_default_handler() {
 
 #[test]
 fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcommands_handler() {
-	let mut manager = CommandManager::new();
+	let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"default" => handler!(|_context| {
 			Context::message(vec! [
@@ -79,7 +80,7 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 
 #[test]
 fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default_handler_and_passes_arguments() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"default" => handler!(|context| {
 			Context::message(vec! [
@@ -108,7 +109,7 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 
 #[test]
 fn test_tri_subcommand_resolution() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"test" => handler! {
 			"default" => handler!(|_context| {
@@ -156,7 +157,8 @@ fn test_start_with_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 2);
@@ -191,7 +193,8 @@ fn test_start_without_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -216,7 +219,8 @@ fn test_follow_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 0);
@@ -233,7 +237,8 @@ fn test_follow_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -259,7 +264,8 @@ fn test_subscribe_with_streak_one() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -285,7 +291,8 @@ fn test_subscribe_with_different_streak() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -311,7 +318,8 @@ fn test_host_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 0);
@@ -327,7 +335,8 @@ fn test_host_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -353,7 +362,8 @@ fn test_join() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -379,7 +389,8 @@ fn test_leave() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -407,7 +418,8 @@ fn test_spam_compliant_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: "".to_string(),
+        count: None     
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -427,7 +439,8 @@ fn test_spam_caps_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: "".to_string(),
+        count: None
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -470,7 +483,8 @@ fn test_spam_emoji_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: "".to_string(),
+        count: None     
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -507,7 +521,8 @@ fn test_spam_url_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: "".to_string(),
+        count: None 
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);

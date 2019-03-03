@@ -17,5 +17,4 @@ pub mod packet;
 pub mod handler;
 #[macro_use]
 pub mod command;
-pub mod cache;
 pub mod config;

@@ -68,7 +68,8 @@ impl Handler for SpamHandler {
 						user: None,
 						role: None,
 						target: None,
-						service: String::new()
+						service: String::new(),
+                        count: None
 					}),
 					None
 				]
@@ -86,7 +87,8 @@ impl Handler for SpamHandler {
 						user: None,
 						role: None,
 						target: None,
-						service: String::new()
+						service: String::new(),
+                        count: None
 					}),
 					None
 				]
@@ -104,7 +106,8 @@ impl Handler for SpamHandler {
 						user: None,
 						role: None,
 						target: None,
-						service: String::new()
+						service: String::new(),
+                        count: None
 					}),
 					None
 				]

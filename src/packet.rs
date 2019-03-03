@@ -56,7 +56,8 @@ pub struct Context {
     pub user: Option<String>,
     pub role: Option<Role>,
     pub target: Option<String>,
-    pub service: String
+    pub service: String,
+    pub count: Option<u32>
 }
 
 impl Context {
@@ -68,7 +69,8 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: String::new(),
+            count: None
         }
     }
 
@@ -79,7 +81,8 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: String::new(),
+            count: None
         }
     }
 
@@ -90,7 +93,8 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: String::new(),
+            count: None
         }
     }
 

@@ -28,7 +28,7 @@ pub struct CommandManager {
 }
 
 struct DynamicCommandMeta {
-	count: usize
+	count: u32
 }
 
 impl CommandManager {
@@ -85,7 +85,7 @@ impl CommandManager {
 	}
 
 	fn get_api_url(&self, endpoint: &str) -> String {
-		format!("{}{}", &self.api_base, endpoint)
+		format!("{}/{}", &self.api_base, endpoint)
 	}
 
 	fn modify(&self, argument: String, modifiers: Vec<String>) -> String {
@@ -165,8 +165,11 @@ impl CommandManager {
 				let mut response = self.client.get(&self.get_api_url(&endpoint))
 					.send().map_err(|err| DynamicCommandError::RequestError(err))?;
 				match response.status().is_success() {
-					true => match response.json() {
-						Ok(result) => return Ok(result),
+					true => match response.json::<Context>() {
+						Ok(result) => {
+							let meta = DynamicCommandMeta { count: result.count.unwrap_or(0) };
+							return Ok(result)
+						},
 						Err(err) => return Err(DynamicCommandError::RequestError(err))
 					},
 					_ => return Err(DynamicCommandError::FirstElementMustBeText)
@@ -243,9 +246,7 @@ impl CommandManager {
 								// going to check the API / Cache to see if we have a
 								// custom command or an alias by this name.
 								match self.try_dynamic_command(&context.channel, name) {
-									Ok(context) => {
-										return Some(context)
-									},
+									Ok(context) => return Some(context),
 									Err(err) => {
 										println!("Could not run command: {:?}", err);
 										return None;
