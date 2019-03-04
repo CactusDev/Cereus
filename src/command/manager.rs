@@ -47,18 +47,18 @@ impl CommandManager {
 				modifiers.insert("lower".to_string(), Box::new(|s: &String| s.to_lowercase()));
 
 				modifiers.insert("title".to_string(), Box::new(|s: &String| {
-					let mut chars = s.chars();
-					match chars.next() {
-						Some(c) => c.to_uppercase().collect::<String>() + chars.as_str(),
-						None => String::new()
-					}
+				    let mut c = s.chars();
+				    match c.next() {
+				        None => String::new(),
+				        Some(f) => f.to_uppercase().collect::<String>() + &c.as_str().to_lowercase()
+				    }
 				}));
 
 				modifiers.insert("reverse".to_string(), Box::new(|s| s.chars()
 					.rev().collect::<String>()));
 
 				modifiers.insert("tag".to_string(), Box::new(|s| {
-					let (first, remaining) = s.split_at(0);
+					let (first, remaining) = s.split_at(1);
 					if first == "@" {
 						return remaining.to_string();
 					}
