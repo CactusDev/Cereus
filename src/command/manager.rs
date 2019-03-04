@@ -228,37 +228,33 @@ impl CommandManager {
 	}
 
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
-		if let Packet::Message { ref text, action: _ } = context.packet {
-			return match text.split_first() {
-				Some((name, arguments)) => {
-					if let Component::Text(component_text) = name {
-						let component_text = component_text.replace("!", "");
-						match self.commands.get(&component_text) {
-							Some(cmd) => {
-								match cmd.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-									Some(handler) => return self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None).ok(),
-									None => return None
+		match context.packet {
+			Packet::Message { ref text, action: _ } => match text.split_first() {
+				Some((name, arguments)) => match name {
+					Component::Text(component) => match self.commands.get(&component.replace("!", "")) {
+						Some(handler) => {
+							// We have a builtin comamnd of this name.
+							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
+								Some(handler) => self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None).ok(),
+								None => None
+							}
+						},
+						None => {
+							// No builtin command was found. Check the API.
+							match self.try_dynamic_command(&context.channel, name) {
+								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
+								Err(e) => {
+									println!("Could not run dynamic command: {:?}", e);
+									None
 								}
-							},
-							None => {
-								// If we don't have a builtin with this name, then we're
-								// going to check the API to see if we have a
-								// custom command or an alias by this name.
-								match self.try_dynamic_command(&context.channel, name) {
-									Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
-									Err(err) => {
-										println!("Could not run command: {:?}", err);
-										return None;
-									}
-								};
 							}
 						}
-					}
-					None
+					},
+					_ => None
 				},
 				None => None
-			}
+			},
+			_ => None
 		}
-		None
 	}
 }
