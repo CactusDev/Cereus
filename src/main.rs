@@ -20,10 +20,6 @@ pub mod command;
 pub mod config;
 pub mod types;
 
-use packet::Context;
-
-use std::vec::Vec;
-
 fn main() {
     env_logger::init().unwrap();
 
@@ -45,7 +41,7 @@ fn main() {
                 Box::new(event_handler),   Box::new(command_handler)
             ]);
 
-            let w = web::WebServer::new("localhost", 1234, handler_handler);
+            let w = web::WebServer::new("localhost", cfg.port, handler_handler);
             w.listen();
         },
         Err(e) => {

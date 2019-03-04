@@ -109,18 +109,17 @@ impl CommandManager {
 		}
 
 		let argn = argn.unwrap().as_str().parse::<usize>().unwrap();
-		let mut result: String = String::new();
 
 		// TODO: this could be optimized
-		if argn - 1 < args.len() {
-			result = args[argn - 1].to_string()
+		let result = if argn - 1 < args.len() {
+			 args[argn - 1].to_string()
 		} else {
 			if let Some(default) = default {
-				result = default.as_str().to_string()
+				 default.as_str().to_string()
 			} else {
 				return None
 			}
-		}
+		};
 
 		if let Some(modifiers) = modifiers {
 			let modifiers = modifiers.as_str().split("|").skip(1)
@@ -134,6 +133,16 @@ impl CommandManager {
 	fn sub_args(&self, args: Vec<Component>, matches: &Captures) -> Option<String> {
 		let default   = matches.get(1);
 		let modifiers = matches.get(2);
+
+		let args = if args.len() > 0 {
+			args
+		} else {
+			if let Some(default) = default {
+                vec! [ Component::Text(default.as_str().to_string()) ]
+			} else {
+			    return None
+			}
+		};
 
 		let result: String = args.iter().map(|s| s.to_string()).collect::<Vec<String>>().join(" ");
 
@@ -156,7 +165,8 @@ impl CommandManager {
 				match response.status().is_success() {
 					true => match response.json::<Context>() {
 						Ok(result) => {
-							let meta = DynamicCommandMeta { count: result.count.unwrap_or(0) };
+							// TODO: Finish count implementation
+							let _meta = DynamicCommandMeta { count: result.count.unwrap_or(0) };
 							return Ok(result)
 						},
 						Err(err) => return Err(DynamicCommandError::RequestError(err))
@@ -193,11 +203,11 @@ impl CommandManager {
 								text = text.replace("%CHANNEL%", &context.channel);
 
 								// Then, args / argn
-								if let Some(caps) = self.argn_regex.captures(&text.clone()) {
+								if self.argn_regex.is_match(&text.clone()) {
 									text = self.argn_regex.replace(&text, |caps: &Captures| self.sub_argn(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
 								}
 
-								if let Some(caps) = self.args_regex.captures(&text.clone()) {
+								if self.args_regex.is_match(&text.clone()) {
 									text = self.args_regex.replace(&text, |caps: &Captures| self.sub_args(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
 								}
 
@@ -210,7 +220,7 @@ impl CommandManager {
 				}
 
 				let mut finished_context = context.clone();
-				finished_context.packet = Packet::Message { text: filled_components, action: false };  // TODO: This somehow needs to be passed down
+				finished_context.packet = Packet::Message { text: filled_components, action: action };
 				return Ok(finished_context);
 			},
 			_ => Err(())
