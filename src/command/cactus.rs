@@ -1,6 +1,5 @@
 
-#[macro_use]
-use command::{Command};
+use command::Command;
 use packet::Context;
 
 pub fn create_cactus_command() -> Command {

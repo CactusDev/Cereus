@@ -3,6 +3,7 @@ use packet::*;
 use std::collections::HashMap;
 
 pub mod manager;
+pub mod api;
 
 pub type BuiltinCommandHandler = Fn(&Context) -> Context;
 

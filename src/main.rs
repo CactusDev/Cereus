@@ -18,6 +18,7 @@ pub mod handler;
 #[macro_use]
 pub mod command;
 pub mod config;
+pub mod types;
 
 use packet::Context;
 
