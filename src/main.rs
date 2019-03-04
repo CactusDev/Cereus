@@ -21,6 +21,8 @@ pub mod config;
 
 use packet::Context;
 
+use std::vec::Vec;
+
 fn main() {
     env_logger::init().unwrap();
 
@@ -31,28 +33,7 @@ fn main() {
         Ok(cfg) => {
             let mut manager = command::manager::CommandManager::new("");
 
-            manager.add_command(command!("cactus",
-                "default" => handler!(|_context| {
-                    Context::message(vec! [
-                        text!("Ohai! I'm CactusBot! "),
-                        emoji!("cactus")
-                    ])
-                }),
-                "github" => handler!(
-                    "default" => handler!(|_context| {
-                        Context::message(vec! [
-                            text!("We're open source! Check it out at: "),
-                            url!("https://github.com/CactusDev")
-                        ])
-                    }),
-                    "cereus" => handler!(|_context| {
-                        Context::message(vec! [
-                            text!("Checkout Cereus at: "),
-                            url!("https://github.com/CactusDev/Cereus")
-                        ])
-                    })
-                )
-            ));
+            manager.add_command(command::cactus::create_cactus_command());
 
             let logging_handler = handler::logging::LoggingHandler::new();
             let event_handler = handler::event::EventHandler::new();

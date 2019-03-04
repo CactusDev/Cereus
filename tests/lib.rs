@@ -197,8 +197,7 @@ fn test_command_args_formatter() {
 
     let first_packet = Packet::Message { text: vec! [
         text!("Hello "),
-        text!("test "),
-        text!("ing!")
+        text!("test ing!")
     ], action: false };
     assert!(resolved.is_some());
     assert_eq!(resolved.unwrap().packet, first_packet);
