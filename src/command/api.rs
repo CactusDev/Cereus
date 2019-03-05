@@ -1,5 +1,6 @@
 
-use types::Quote;
+use types::{Command, Quote};
+use serde_json::{Value, from_value};
 
 pub struct CommandAPI {
 	client: reqwest::Client,
@@ -27,5 +28,11 @@ impl CommandAPI {
 	pub fn get_quote(&self, channel: &str, id: u32) -> Result<Quote, reqwest::Error> {
 		let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
 		self.client.get(&url).send()?.error_for_status()?.json()
+	}
+
+	pub fn get_command(&self, channel: &str, command: &str) -> Result<Command, reqwest::Error> {
+		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
+		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
+		Ok(from_value(thing["data"].clone()).unwrap())
 	}
 }

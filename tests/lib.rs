@@ -19,7 +19,7 @@ fn get_example_text_only_context(packet: Packet) -> Context {
 		user: Some("Stanley".to_string()),
 		role: None,
 		target: None,
-		service: "Twitch".to_string(),
+		service: Some("Twitch".to_string()),
         count: None
 	}
 }
@@ -649,7 +649,7 @@ fn test_start_with_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -685,7 +685,7 @@ fn test_start_without_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -711,7 +711,7 @@ fn test_follow_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -729,7 +729,7 @@ fn test_follow_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -756,7 +756,7 @@ fn test_subscribe_with_streak_one() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -783,7 +783,7 @@ fn test_subscribe_with_different_streak() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -810,7 +810,7 @@ fn test_host_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -827,7 +827,7 @@ fn test_host_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -854,7 +854,7 @@ fn test_join() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -881,7 +881,7 @@ fn test_leave() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let result = handler.run(&context);
@@ -910,7 +910,7 @@ fn test_spam_compliant_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None     
     };
     let handler = SpamHandler::new();
@@ -931,7 +931,7 @@ fn test_spam_caps_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None
     };
     let handler = SpamHandler::new();
@@ -975,7 +975,7 @@ fn test_spam_emoji_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None     
     };
     let handler = SpamHandler::new();
@@ -1013,7 +1013,7 @@ fn test_spam_url_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string(),
+        service: Some("Twitch".to_string()),
         count: None 
     };
     let handler = SpamHandler::new();
@@ -1037,11 +1037,4 @@ fn test_spam_url_message() {
         },
         None => assert!(false)
     };
-}
-
-#[test]
-fn test_api_url_getting() {
-    let base = "https://api.cactus.opsywopsy.science/v1";
-    let manager = CommandManager::new(base);
-    assert_eq!(manager.get_api_url("command"), base.to_owned() + "/command")
 }

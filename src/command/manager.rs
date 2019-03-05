@@ -5,14 +5,12 @@ use rand::{
 	seq::SliceRandom
 };
 
-use command::Command;
+use command::{Command, api::CommandAPI};
 use packet::{Packet, Context, Component, string_components_to_string};
-
 use regex::{Regex, Captures};
 
 #[derive(Debug)]
 enum DynamicCommandError {
-	FirstElementMustBeText,
 	RequestError(reqwest::Error)
 }
 
@@ -20,8 +18,7 @@ type ModifierFunction = Fn(&String) -> String;
 
 pub struct CommandManager {
 	commands: HashMap<String, Command>,
-	client: reqwest::Client,
-	api_base: String,
+	api: CommandAPI,
 	argn_regex: Regex,
 	args_regex: Regex,
 	modifiers: HashMap<String, Box<ModifierFunction>>
@@ -36,8 +33,7 @@ impl CommandManager {
 	pub fn new(api_base: &str) -> Self {
 		CommandManager {
 			commands: HashMap::new(),
-			client:   reqwest::Client::new(),
-			api_base: api_base.to_string(),
+			api: CommandAPI::new(api_base),
 			argn_regex: Regex::new(r#"%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%"#).unwrap(),
 			args_regex: Regex::new(r#"%ARGS(?:=([^|]+))?((?:\|\w+)+)?%"#).unwrap(),
 			modifiers: {
@@ -77,10 +73,6 @@ impl CommandManager {
 				modifiers
 			}
 		}
-	}
-
-	pub fn get_api_url(&self, endpoint: &str) -> String {
-		format!("{}/{}", &self.api_base, endpoint)
 	}
 
 	pub fn add_command(&mut self, command: Command) {
@@ -155,27 +147,19 @@ impl CommandManager {
 		return Some(result);
 	}
 
-	fn try_dynamic_command(&self, channel: &str, name: &Component) -> Result<Context, DynamicCommandError> {
+	fn try_dynamic_command(&self, channel: &str, name: &str) -> Result<Context, DynamicCommandError> {
 		// The name of the command should be the first component, so lets pull that out
-		match name {
-			Component::Text(ref command_name) => {
-				let endpoint = format!("channel/{}/command/{}", channel, command_name);
-				let mut response = self.client.get(&self.get_api_url(&endpoint))
-					.send().map_err(|err| DynamicCommandError::RequestError(err))?;
-				match response.status().is_success() {
-					true => match response.json::<Context>() {
-						Ok(result) => {
-							// TODO: Finish count implementation
-							let _meta = DynamicCommandMeta { count: result.count.unwrap_or(0) };
-							return Ok(result)
-						},
-						Err(err) => return Err(DynamicCommandError::RequestError(err))
-					},
-					_ => return Err(DynamicCommandError::FirstElementMustBeText)
-				}
-			},
-			_ => return Err(DynamicCommandError::FirstElementMustBeText)
-		}
+		let response = self.api.get_command(channel, name).map_err(|err| DynamicCommandError::RequestError(err))?;
+		// TODO: Finish count implementation
+		return Ok(Context {
+			packet: Packet::Message { text: response.response, action: false },
+			channel: response.channel,
+			user: None,
+			role: None,
+			target: None,
+			service: None,
+			count: None  // TODO
+		})
 	}
 
 	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>, meta: Option<DynamicCommandMeta>) -> Result<Context, ()> {
@@ -241,7 +225,7 @@ impl CommandManager {
 						},
 						None => {
 							// No builtin command was found. Check the API.
-							match self.try_dynamic_command(&context.channel, name) {
+							match self.try_dynamic_command(&context.channel, &component.replace("!", "")) {
 								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
 								Err(e) => {
 									println!("Could not run dynamic command: {:?}", e);

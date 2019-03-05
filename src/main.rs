@@ -28,7 +28,7 @@ fn main() {
     let config = config::CereusConfiguration::new("cereus.json");
     match config {
         Ok(cfg) => {
-            let mut manager = command::manager::CommandManager::new("");
+            let mut manager = command::manager::CommandManager::new("http://localhost:8000");
 
             manager.add_command(command::cactus::create_cactus_command());
 
