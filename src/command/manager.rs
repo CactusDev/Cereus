@@ -215,11 +215,11 @@ impl CommandManager {
 		match context.packet {
 			Packet::Message { ref text, action: _ } => match text.split_first() {
 				Some((name, arguments)) => match name {
-					Component::Text(component) => match self.commands.get(&component.replace("!", "")) {
+					Component::Text(component) => match self.commands.get(&component.trim().replace("!", "")) {
 						Some(handler) => {
 							// We have a builtin comamnd of this name.
 							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-								Some(handler) => self.fill_response_formatters(&handler(context).merge(context), text.to_vec(), None).ok(),
+								Some(handler) => self.fill_response_formatters(&handler(context, &self.api).merge(context), text.to_vec(), None).ok(),
 								None => None
 							}
 						},

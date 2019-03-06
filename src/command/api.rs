@@ -1,6 +1,7 @@
 
 use types::{Command, Quote};
-use serde_json::{Value, from_value};
+use packet::{Component};
+use serde_json::{Value, from_value, json};
 
 pub struct CommandAPI {
 	client: reqwest::Client,
@@ -34,5 +35,19 @@ impl CommandAPI {
 		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
 		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
 		Ok(from_value(thing["data"].clone()).unwrap())
+	}
+
+	pub fn create_command(&self, channel: &str, command: &str, response: Vec<Component>) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("command/{}/create", channel));
+		let body = json!({
+			"name": command,
+			"response": response,
+			"services": json!([])
+		});
+		println!("{:?}", &body);
+		self.client.post(&url)
+			.json(&body)
+			.send()?.error_for_status()?;
+		Ok(())
 	}
 }

@@ -7,8 +7,7 @@ pub struct UserAttributes {
 }
 
 pub struct UserResponse {
-	id: String,
-
+	id: String
 }
 
 pub struct CommandAttributes {

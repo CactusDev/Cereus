@@ -1,3 +1,4 @@
+#![feature(slice_patterns)]
 
 extern crate env_logger;
 extern crate iron;
@@ -31,6 +32,7 @@ fn main() {
             let mut manager = command::manager::CommandManager::new("http://localhost:8000");
 
             manager.add_command(command::cactus::create_cactus_command());
+            manager.add_command(command::command::create_command_command());
 
             let logging_handler = handler::logging::LoggingHandler::new();
             let event_handler = handler::event::EventHandler::new();

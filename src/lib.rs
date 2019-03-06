@@ -1,3 +1,4 @@
+#![feature(slice_patterns)]
 
 extern crate env_logger;
 extern crate iron;
