@@ -1,6 +1,6 @@
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "data", rename_all = "camelCase")]
+#[serde(tag = "type", content = "data", rename_all = "lowercase")]
 pub enum Component {
     Text(String),
     Emoji(String),
