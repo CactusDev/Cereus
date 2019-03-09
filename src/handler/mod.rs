@@ -21,13 +21,13 @@ impl HandlerHandler {
 		}
 	}
 
-	pub fn handle(&self, context: &Context) -> Vec<Context> {
+	pub fn handle(&self, ctx: &Context) -> Vec<Context> {
 		let mut contexts: Vec<Context> = Vec::new();
 
 		'main: for handler in &self.handlers {
-			for context in handler.run(context) {
+			for context in handler.run(ctx) {
 				match context {
-					Some(ctx) => contexts.push(ctx),
+					Some(context) => contexts.push(context.merge(ctx)),
 					None => {
 						// If we don't have anything here, that means this is a stop context, and we need
 						// to quit executing handlers, and return what we have now.

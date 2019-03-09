@@ -227,9 +227,10 @@ impl CommandManager {
 							// No builtin command was found. Check the API.
 							match self.try_dynamic_command(&context.channel, &component.replace("!", "")) {
 								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
-								Err(e) => {
-									println!("Could not run dynamic command: {:?}", e);
-									None
+								Err(_) => {
+									Some(Context::message(vec! [
+										text!("Command not found.")
+									]))
 								}
 							}
 						}

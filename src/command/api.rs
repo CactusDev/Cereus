@@ -38,15 +38,20 @@ impl CommandAPI {
 	}
 
 	pub fn create_command(&self, channel: &str, command: &str, response: Vec<Component>) -> Result<(), reqwest::Error> {
-		let url = self.get_api_url(&format!("command/{}/create", channel));
+		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
 		let body = json!({
-			"name": command,
 			"response": response,
 			"services": json!([])
 		});
-		println!("{:?}", &body);
 		self.client.post(&url)
 			.json(&body)
+			.send()?.error_for_status()?;
+		Ok(())
+	}
+
+	pub fn remove_command(&self, channel: &str, command: &str) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
+		self.client.delete(&url)
 			.send()?.error_for_status()?;
 		Ok(())
 	}

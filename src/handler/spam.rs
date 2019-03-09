@@ -59,7 +59,7 @@ impl Handler for SpamHandler {
 			let caps = caps_score(&text);
 			if caps > 16 {
 				return vec! [
-					Some(Context::message(vec! [
+					Some(Context::target_message(context.user.clone(), vec! [
 						text!("Please do not spam capital letters.")
 					])),
 					Some(Context {
@@ -67,7 +67,7 @@ impl Handler for SpamHandler {
 						channel: String::new(),
 						user: None,
 						role: None,
-						target: None,
+						target: context.user.clone(),
 						service: None,
                         count: None
 					}),
@@ -78,7 +78,7 @@ impl Handler for SpamHandler {
 			let emoji = count_emoji(&text);
 			if emoji > 6 {
 				return vec! [
-					Some(Context::message(vec! [
+					Some(Context::target_message(context.user.clone(), vec! [
 						text!("Please do not spam emoji.")
 					])),
 					Some(Context {
@@ -86,7 +86,7 @@ impl Handler for SpamHandler {
 						channel: String::new(),
 						user: None,
 						role: None,
-						target: None,
+						target: context.user.clone(),
 						service: None,
                         count: None
 					}),
@@ -97,7 +97,7 @@ impl Handler for SpamHandler {
 			let has_url = contains_url(&text);
 			if has_url {
 				return vec! [
-					Some(Context::message(vec! [
+					Some(Context::target_message(context.user.clone(), vec! [
 						text!("Please do not post URLs.")
 					])),
 					Some(Context {
@@ -105,7 +105,7 @@ impl Handler for SpamHandler {
 						channel: String::new(),
 						user: None,
 						role: None,
-						target: None,
+						target: context.user.clone(),
 						service: None,
                         count: None
 					}),

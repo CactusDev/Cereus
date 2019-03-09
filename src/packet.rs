@@ -74,6 +74,18 @@ impl Context {
         }
     }
 
+    pub fn target_message(target: Option<String>, components: Vec<Component>) -> Self {
+        Context {
+            packet: Packet::Message { text: components, action: false },
+            channel: String::new(),
+            user: None,
+            role: None,
+            target,
+            service: None,
+            count: None
+        }
+    }
+
     pub fn event(event: Event) -> Self {
         Context {
             packet: Packet::Event { kind: event },
@@ -117,6 +129,7 @@ impl Context {
     pub fn merge(mut self, context: &Context) -> Context {
         self.user = context.user.clone();
         self.channel = context.channel.clone();
+        self.service = context.service.clone();
     
         self
     }
