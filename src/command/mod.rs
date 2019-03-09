@@ -3,8 +3,9 @@ use packet::*;
 use std::collections::HashMap;
 
 pub mod manager;
+pub mod api;
 
-pub type BuiltinCommandHandler = Fn(&Context) -> Context;
+pub type BuiltinCommandHandler = Fn(&Context, &api::CommandAPI) -> Context;
 
 pub enum HandlerType {
 	/// Handler type only has a default handler
@@ -146,3 +147,6 @@ macro_rules! handler {
 		}
 	}
 }
+
+pub mod cactus;
+pub mod command;

@@ -1,6 +1,6 @@
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", content = "data", rename_all = "camelCase")]
+#[serde(tag = "type", content = "data", rename_all = "lowercase")]
 pub enum Component {
     Text(String),
     Emoji(String),
@@ -56,7 +56,8 @@ pub struct Context {
     pub user: Option<String>,
     pub role: Option<Role>,
     pub target: Option<String>,
-    pub service: String
+    pub service: Option<String>,
+    pub count: Option<u32>
 }
 
 impl Context {
@@ -68,7 +69,20 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: None,
+            count: None
+        }
+    }
+
+    pub fn target_message(target: Option<String>, components: Vec<Component>) -> Self {
+        Context {
+            packet: Packet::Message { text: components, action: false },
+            channel: String::new(),
+            user: None,
+            role: None,
+            target,
+            service: None,
+            count: None
         }
     }
 
@@ -79,7 +93,8 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: None,
+            count: None
         }
     }
 
@@ -90,8 +105,33 @@ impl Context {
             user: None,
             role: None,
             target: None,
-            service: String::new()
+            service: None,
+            count: None
         }
+    }
+
+    pub fn sub(&mut self, pattern: regex::Regex, repl: &str) -> Option<String> {
+        if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
+
+            for (i, chunk) in text.clone().iter().enumerate() {
+                match chunk {
+                    Component::Text(t) => {
+                        let filled = pattern.replace(t, repl);
+                        text[i] = Component::Text(filled.to_string());
+                    },
+                    _ => continue
+                }
+            }
+        }
+        None
+    }
+
+    pub fn merge(mut self, context: &Context) -> Context {
+        self.user = context.user.clone();
+        self.channel = context.channel.clone();
+        self.service = context.service.clone();
+    
+        self
     }
 }
 

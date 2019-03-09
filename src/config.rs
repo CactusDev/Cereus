@@ -24,14 +24,14 @@ impl std::fmt::Display for ConfigurationError {
 #[derive(Deserialize, Clone)]
 pub struct RedisConfig {
 	pub host: String,
-	pub port: u16,
+	pub port: u32,
 	pub password: Option<String>,
 	pub db: i64,
 }
 
 #[derive(Deserialize, Clone)]
 pub struct CereusConfiguration {
-	pub port: i16,
+	pub port: u32,
 	pub redis: RedisConfig
 }
 

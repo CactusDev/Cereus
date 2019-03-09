@@ -16,18 +16,19 @@ fn get_example_text_only_context(packet: Packet) -> Context {
 	Context {
 		packet: packet,
 		channel: "Stanley".to_string(),
-		user: None,
+		user: Some("Stanley".to_string()),
 		role: None,
 		target: None,
-		service: "Twitch".to_string()
+		service: Some("Twitch".to_string()),
+        count: None
 	}
 }
 
 #[test]
 fn test_command_name_only_resolves_to_default_handler() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|_context| {
+		"default" => handler!(|_context, _api| {
 			Context::message(vec! [
 				text!("Hello!")
 			])
@@ -49,14 +50,14 @@ fn test_command_name_only_resolves_to_default_handler() {
 
 #[test]
 fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcommands_handler() {
-	let mut manager = CommandManager::new();
+	let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|_context| {
+		"default" => handler!(|_context, _api| {
 			Context::message(vec! [
 				text!("Hello!")
 			])
 		}),
-		"test" => handler!(|_context| {
+		"test" => handler!(|_context, _api| {
 			Context::message(vec! [
 				text!("Hello, world!")
 			])
@@ -79,11 +80,12 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 
 #[test]
 fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default_handler_and_passes_arguments() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|context| {
+		"default" => handler!(|context, _api| {
 			Context::message(vec! [
-				text!("This is a {}!", &if let Packet::Message { ref text, action: _ } = context.packet {
+				text!("This is a "),
+                text!("{}!", &if let Packet::Message { ref text, action: _ } = context.packet {
 					text[1].to_string()
 				} else {
 					"Unknown".to_string()
@@ -100,7 +102,8 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 	assert!(resolved.is_some());
 
     let first_packet = Packet::Message { text: vec! [
-        text!("This is a test!")
+        text!("This is a "),
+        text!("test!")
     ], action: false };
 
     assert_eq!(resolved.unwrap().packet, first_packet);
@@ -108,22 +111,22 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 
 #[test]
 fn test_tri_subcommand_resolution() {
-	let mut manager = CommandManager::new();
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"test" => handler! {
-			"default" => handler!(|_context| {
+			"default" => handler!(|_context, _api| {
                 Context::message(vec! [
 					text!("Hello!")
                 ])
 			}),
 			"another" => handler! {
-				"default" => handler!(|_context| {
+				"default" => handler!(|_context, _api| {
 					Context::message(vec! [
 						text!("Hello!")
 					])
 				}),
 				"final" => handler! {
-					"default" => handler!(|_context| {
+					"default" => handler!(|_context, _api| {
                         Context::message(vec! [
 							text!("Hello!")
 						])
@@ -147,6 +150,496 @@ fn test_tri_subcommand_resolution() {
 }
 
 #[test]
+fn test_command_user_formatter() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%USER%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("Stanley!"),
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_args_formatter() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARGS%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test"), text!("ing") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test ing!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!"),
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_out_of_range() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG2%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_additional_dangling_arguments() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test"), text!("other") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_args_formatter_with_default_arguments_and_none_provided() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARGS=user%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("user!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_args_formatter_with_default_arguments_with_provided() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARGS=user%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+
+
+#[test]
+fn test_command_argn_formatter_with_default_arguments_and_none_provided() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1=user%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("user!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_default_arguments_with_provided() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1=user%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_default_arguments_with_provided_modifier_upper() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1=user|upper%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("TEST!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_default_arguments_with_none_modifier_upper() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1=user|upper%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("USER!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_lower() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1|lower%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("TEST") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_title() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1|title%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("TEST") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("Test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_reverse() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1|reverse%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("thing") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("gniht!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_tag() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("@%ARG1|tag%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("@stanley") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("@stanley!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_shuffle() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1|shuffle%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_ne!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_argn_formatter_with_modifier_chain() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("Hello "),
+                text!("%ARG1|title|tag%!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd"), text!("@test") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello "),
+        text!("@Test!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_ne!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
+fn test_command_channel_formatter() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cmd",
+        "default" => handler!(|_context, _api| {
+            Context::message(vec! [
+                text!("This is the "),
+                text!("%CHANNEL% "),
+                text!("channel!")
+            ])
+        })
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cmd") ],
+        action: false
+    });
+
+    let resolved = manager.run_command(&context);
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("This is the "),
+        text!("Stanley "),
+        text!("channel!")
+    ], action: false };
+    assert!(resolved.is_some());
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
 fn test_start_with_new() {
 	let handler = EventHandler::new();
 
@@ -156,7 +649,8 @@ fn test_start_with_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 2);
@@ -191,7 +685,8 @@ fn test_start_without_new() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -216,7 +711,8 @@ fn test_follow_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 0);
@@ -233,7 +729,8 @@ fn test_follow_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -259,7 +756,8 @@ fn test_subscribe_with_streak_one() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -285,7 +783,8 @@ fn test_subscribe_with_different_streak() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -311,7 +810,8 @@ fn test_host_without_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     assert_eq!(result.len(), 0);
@@ -327,7 +827,8 @@ fn test_host_with_success() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -353,7 +854,8 @@ fn test_join() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -379,7 +881,8 @@ fn test_leave() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let result = handler.run(&context);
     let first_packet = Packet::Message { text: vec! [
@@ -407,7 +910,8 @@ fn test_spam_compliant_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: Some("Twitch".to_string()),
+        count: None     
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -427,7 +931,8 @@ fn test_spam_caps_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()
+        service: Some("Twitch".to_string()),
+        count: None
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -470,7 +975,8 @@ fn test_spam_emoji_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: Some("Twitch".to_string()),
+        count: None     
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
@@ -507,7 +1013,8 @@ fn test_spam_url_message() {
         user: Some("Stanley".to_string()),
         role: None,
         target: None,
-        service: "".to_string()        
+        service: Some("Twitch".to_string()),
+        count: None 
     };
     let handler = SpamHandler::new();
     let result = handler.run(&context);
