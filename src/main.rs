@@ -43,6 +43,8 @@ fn main() {
                 Box::new(event_handler),   Box::new(command_handler)
             ]);
 
+            println!("t");
+
             let w = web::WebServer::new("127.0.0.1", cfg.port, handler_handler);
             w.listen();
         },

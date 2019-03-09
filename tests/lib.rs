@@ -569,7 +569,7 @@ fn test_command_argn_formatter_with_modifier_shuffle() {
     ));
 
     let context = get_example_text_only_context(Packet::Message {
-        text: vec! [ text!("cmd"), text!("test") ],
+        text: vec! [ text!("cmd"), text!("tearstarstarstarstarstarstarstarstarstarstarstarstarstst") ],
         action: false
     });
 
@@ -577,7 +577,7 @@ fn test_command_argn_formatter_with_modifier_shuffle() {
 
     let first_packet = Packet::Message { text: vec! [
         text!("Hello "),
-        text!("test!")
+        text!("tearstarstarstarstarstarstarstarstarstarstarstarstarstst!")
     ], action: false };
     assert!(resolved.is_some());
     assert_ne!(resolved.unwrap().packet, first_packet);
