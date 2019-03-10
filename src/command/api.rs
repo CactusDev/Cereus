@@ -59,6 +59,6 @@ impl CommandAPI {
 	pub fn list_command(&self, channel: &str) -> Result<Vec<Command>, reqwest::Error> {
 		let url = self.get_api_url(&format!("command/{}", channel));
 		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
-		Ok(from_value(thing["data"].clone()).unwrap())
+		Ok(from_value(thing).unwrap())
 	}
 }
