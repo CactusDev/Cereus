@@ -67,11 +67,8 @@ pub fn create_command_command() -> Command {
 						Ok(()) => Context::message(vec! [
 							text!("Command removed.")
 						]),
-						Err(_) => {
-							Context::message(vec! [
-								text!("Command does not exist!")
-							])
-						}
+						Err(_) =>
+							Context::message(vec! [ text!("Command does not exist!") ])
 					}
 				},
 				_ => {
@@ -112,9 +109,7 @@ pub fn create_command_command() -> Command {
 						Ok(()) => Context::message(vec! [
 							text!("Command has been updated!")
 						]),
-						Err(_) => {
-							Context::message(vec! [ text!("Command does not exist!") ])
-						}
+						Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
 					}
 				},
 				_ => {
