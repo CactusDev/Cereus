@@ -7,6 +7,50 @@ pub mod api;
 
 pub type BuiltinCommandHandler = Fn(&Context, &api::CommandAPI) -> Context;
 
+#[macro_export]
+macro_rules! handler {
+	($handler:expr) => {
+		{
+			// Don't really need to do any extra processing here.
+			$crate::command::HandlerType::Only(Box::new($handler))
+		}
+	};
+	($($key:expr => $handler:expr),+) => {
+		{
+			// Once again, we don't really need to do anything else here other than package it into the correct type.
+			let mut subcommands: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
+			$(
+				subcommands.insert($key.to_string(), Box::new($handler));
+			)+
+			$crate::command::HandlerType::SubCommands(subcommands)
+		}
+	}
+}
+
+#[macro_export]
+macro_rules! command {
+	($name:expr, $($subcommand:expr => $handler:expr),+) => {
+		{
+			let mut command_data: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
+			$(
+				// And we know that our handlers have been parsed, so we can attempt to turn this into a functional
+				// command structure that we can actually use.
+				command_data.insert($subcommand.to_string(), Box::new($handler));
+			)+
+			if let None = command_data.get("default") {
+				command_data.insert("default".to_string(), Box::new(handler!(|_context, _api| {
+					// TODO: Make this more meaningful
+					Context::message(vec! [ text!("Invalid argument!") ])
+				})));
+			}
+			$crate::command::Command::new($name, command_data)
+		}
+	}
+}
+
+pub mod cactus;
+pub mod command;
+
 pub enum HandlerType {
 	/// Handler type only has a default handler
 	Only(Box<BuiltinCommandHandler>),
@@ -84,9 +128,13 @@ impl Command {
 
 					match current_command {
 						HandlerType::SubCommands(sub) => match sub.get(current_name) {
-							Some(cmd) => current_command = cmd,
+							Some(cmd) => {
+								current_command = cmd;
+							},
 							None => match sub.get("default") {
-								Some(cmd) => current_command = cmd,
+								Some(cmd) => {
+									current_command = cmd;
+								},
 								None => {
 									//
 									// KNOWN BUG:
@@ -101,7 +149,10 @@ impl Command {
 								}
 							}
 						},
-						HandlerType::Only(cmd) => return Some(cmd)
+						HandlerType::Only(cmd) => {
+						
+							return Some(cmd);
+						}
 					}
 				}
 			},
@@ -112,41 +163,3 @@ impl Command {
 		}
 	}
 }
-
-#[macro_export]
-macro_rules! command {
-	($name:expr, $($subcommand:expr => $handler:expr),+) => {
-		{
-			let mut command_data: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
-			$(
-				// And we know that our handlers have been parsed, so we can attempt to turn this into a functional
-				// command structure that we can actually use.
-				command_data.insert($subcommand.to_string(), Box::new($handler));
-			)+
-			$crate::command::Command::new($name, command_data)
-		}
-	}
-}
-
-#[macro_export]
-macro_rules! handler {
-	($handler:expr) => {
-		{
-			// Don't really need to do any extra processing here.
-			$crate::command::HandlerType::Only(Box::new($handler))
-		}
-	};
-	($($key:expr => $handler:expr),+) => {
-		{
-			// Once again, we don't really need to do anything else here other than package it into the correct type.
-			let mut subcommands: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
-			$(
-				subcommands.insert($key.to_string(), Box::new($handler));
-			)+
-			$crate::command::HandlerType::SubCommands(subcommands)
-		}
-	}
-}
-
-pub mod cactus;
-pub mod command;

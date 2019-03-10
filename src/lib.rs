@@ -1,6 +1,7 @@
-#![feature(slice_patterns)]
 
-extern crate env_logger;
+#![feature(slice_patterns)]
+#![feature(slice_concat_ext)]
+
 extern crate iron;
 extern crate redis;
 extern crate reqwest;
