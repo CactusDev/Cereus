@@ -1,6 +1,7 @@
-#![feature(slice_patterns)]
 
-extern crate env_logger;
+#![feature(slice_patterns)]
+#![feature(slice_concat_ext)]
+
 extern crate iron;
 extern crate redis;
 extern crate reqwest;
@@ -22,8 +23,6 @@ pub mod config;
 pub mod types;
 
 fn main() {
-    env_logger::init().unwrap();
-
     // TODO: Allow argument for configuration location.
     // Load the config
     let config = config::CereusConfiguration::new("cereus.json");
