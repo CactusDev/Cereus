@@ -27,9 +27,8 @@ pub fn create_command_command() -> Command {
 							text!("' has been added!")
 						]),
 						Err(e) => {
-							println!("could not add command for {}: {:?}", &context.channel, e);
 							Context::message(vec! [
-								text!("Encountered error while creating command.")
+								text!("Command already exists!")
 							])
 						}
 					}
