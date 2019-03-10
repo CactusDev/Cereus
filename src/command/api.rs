@@ -8,6 +8,12 @@ pub struct CommandAPI {
 	base: String
 }
 
+#[derive(Deserialize)]
+pub struct QuoteAddResponse {
+	pub created: bool,
+	pub id: u32
+}
+
 impl CommandAPI {
 
 	pub fn new(base: &str) -> Self {
@@ -23,12 +29,24 @@ impl CommandAPI {
 
 	pub fn get_random_quote(&self, channel: &str) -> Result<Quote, reqwest::Error> {
 		let url = self.get_api_url(&format!("quote/{}/random", channel));
-		self.client.get(&url).send()?.error_for_status()?.json()
-	}
+		let result: Value = self.client.get(&url)
+			.send()?.error_for_status()?.json()?;
+		Ok(from_value(result["data"].clone()).unwrap())	}
 
 	pub fn get_quote(&self, channel: &str, id: u32) -> Result<Quote, reqwest::Error> {
 		let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
 		self.client.get(&url).send()?.error_for_status()?.json()
+	}
+
+	pub fn create_quote(&self, channel: &str, quote: Vec<Component>) -> Result<QuoteAddResponse, reqwest::Error> {
+		let url = self.get_api_url(&format!("quote/{}/create", channel));
+		let body = json!({
+			"response": quote
+		});
+		let result: Value = self.client.post(&url)
+			.json(&body)
+			.send()?.error_for_status()?.json()?;
+		Ok(from_value(result["data"].clone()).unwrap())
 	}
 
 	pub fn get_command(&self, channel: &str, command: &str) -> Result<Command, reqwest::Error> {

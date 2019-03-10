@@ -50,6 +50,7 @@ macro_rules! command {
 
 pub mod cactus;
 pub mod command;
+pub mod quote;
 
 pub enum HandlerType {
 	/// Handler type only has a default handler
