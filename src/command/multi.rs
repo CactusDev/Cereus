@@ -3,6 +3,7 @@ use command::Command;
 use packet::{Component, Packet, Context};
 
 const BASE: &str = "https://multi.raredrop.co";
+const VALID_SERVICES: [&str; 4] = ["t", "m", "y", "s"];
 
 pub fn create_multi_command() -> Command {
 	command!("multi",
@@ -14,18 +15,26 @@ pub fn create_multi_command() -> Command {
 						_ => return Context::message(vec! [ text!("Invalid syntax! !multi <service:channel...>") ])
 					};
 
+					if args.len() == 0 {
+						return Context::message(vec! [ text!("Invalid syntax! !multi <service:channel...>") ])
+					}
+
 					let mut stream = String::new();
 					for arg in &args {
-						// TODO: Should probably make an error for this.
 						if let Component::Text(arg) = arg {
 							let split = arg.split(":").collect::<Vec<&str>>();
 							if split.len() != 2 {
-								// TODO: Maybe put an error message here?
-								continue;
+								return Context::message(vec! [ text!("Invalid syntax! !multi <service:channel...>") ])
 							}
 
 							let (service, channel) = (split[0], split[1]);
+							// Validate service
+							if !VALID_SERVICES.contains(&service) {
+								return Context::message(vec! [ text!("Invalid service '"), text!(&service), text!("'!") ])
+							}
 							stream += &format!("/{}{}", service, channel);
+						} else {
+							return Context::message(vec! [ text!("Invalid syntax! Only text can be used as a channel.") ])
 						}
 					}
 					let stream = format!("{}{}", BASE, stream);
