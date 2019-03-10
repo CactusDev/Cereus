@@ -61,4 +61,15 @@ impl CommandAPI {
 		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
 		Ok(from_value(thing).unwrap())
 	}
+
+	pub fn edit_command(&self, channel: &str, command: &str, response: Vec<Component>) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
+		let body = json!({
+			"response": response,
+			"services": json!([])
+		});
+		self.client.patch(&url).json(&body)
+			.send()?.error_for_status()?;
+		Ok(())
+	}
 }

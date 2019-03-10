@@ -94,17 +94,17 @@ pub fn create_command_command() -> Command {
 		"edit" => handler!(|context, api| {
 			match context.packet {
 				Packet::Message { ref text, action: _ } => {
-					let name = match text.as_slice() {
-						[_, _, name, _rest..] => match name {
-							Component::Text(name) => name,
+					let (name, response) = match text.as_slice() {
+						[_, _, name, rest..] => match name {
+							Component::Text(name) => (name, rest.to_vec()),
 							_ => return Context::message(vec! [
-								text!("Invalid syntax! !command remove <name>")
+								text!("Invalid syntax! !command edit <name> <response...>")
 							])
 						},
 						_ => return Context::message(vec! [])
 					};
 
-					let result = api.remove_command(&context.channel, name);
+					let result = api.edit_command(&context.channel, name, response);
 					match result {
 						Ok(()) => Context::message(vec! [
 							text!("Command has been updated!")
