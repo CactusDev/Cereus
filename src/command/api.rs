@@ -31,11 +31,14 @@ impl CommandAPI {
 		let url = self.get_api_url(&format!("quote/{}/random", channel));
 		let result: Value = self.client.get(&url)
 			.send()?.error_for_status()?.json()?;
-		Ok(from_value(result["data"].clone()).unwrap())	}
+		Ok(from_value(result["data"].clone()).unwrap())
+	}
 
-	pub fn get_quote(&self, channel: &str, id: u32) -> Result<Quote, reqwest::Error> {
+	pub fn get_quote(&self, channel: &str, id: &str) -> Result<Quote, reqwest::Error> {
 		let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
-		self.client.get(&url).send()?.error_for_status()?.json()
+		let result: Value = self.client.get(&url)
+			.send()?.error_for_status()?.json()?;
+		Ok(from_value(result["data"].clone()).unwrap())
 	}
 
 	pub fn create_quote(&self, channel: &str, quote: Vec<Component>) -> Result<QuoteAddResponse, reqwest::Error> {
