@@ -50,6 +50,7 @@ macro_rules! command {
 
 pub mod cactus;
 pub mod command;
+pub mod quote;
 pub mod multi;
 
 pub enum HandlerType {
