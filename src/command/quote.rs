@@ -61,6 +61,28 @@ pub fn create_quote_command() -> Command {
 					Context::message(vec! [])
 				}
 			}
+        }),
+        "remove" => handler!(|context, api| {
+        	match context.packet {
+        		Packet::Message { ref text, action: _ } => {
+        			let id = match text.as_slice() {
+        				[_, _, id, _rest..] => match id {
+        					Component::Text(id) => id,
+        					_ => return Context::message(vec! [ text!("Invalid syntax! !quote remove <id>") ])
+        				},
+        				_ => return Context::message(vec! [])
+        			};
+
+        			match api.remove_quote(&context.channel, &id) {
+        				Ok(()) => Context::message(vec! [ text!("Quote removed!") ]),
+        				Err(_) => Context::message(vec! [ text!("Quote not found.") ])
+        			}
+        		},
+				_ => {
+					println!("Got non-message packet to command handler.");
+					Context::message(vec! [])
+				}
+        	}
         })
     )
 }

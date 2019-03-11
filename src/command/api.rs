@@ -52,6 +52,14 @@ impl CommandAPI {
 		Ok(from_value(result["data"].clone()).unwrap())
 	}
 
+	pub fn remove_quote(&self, channel: &str, id: &str) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
+		println!("{}", url);
+		self.client.delete(&url)
+			.send()?.error_for_status()?;
+		Ok(())
+	}
+
 	pub fn get_command(&self, channel: &str, command: &str) -> Result<Command, reqwest::Error> {
 		let url = self.get_api_url(&format!("command/{}/{}", channel, command));
 		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
