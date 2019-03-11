@@ -12,21 +12,19 @@ pub fn create_quote_command() -> Command {
         					Component::Text(id) => id,
         					_ => return Context::message(vec! [ text!("Invalid syntax! !quote [id]") ])
         				},
-        				_ => return Context::message(vec! [])
+        				_ => {
+        					let result = api.get_random_quote(&context.channel);
+							match result {
+								Ok(quote) => return Context::message(quote.response),
+								Err(_) => return Context::message(vec! [ text!("No quote found!") ])
+							}
+						}
         			};
 
         			match api.get_quote(&context.channel, &id) {
-        				Ok(quote) => Context::message(quote.response),
-        				Err(e) => {
-        					println!("{:?}", e);
-							// Get a random quote
-				            let result = api.get_random_quote(&context.channel);
-							match result {
-								Ok(quote) => Context::message(quote.response),
-								Err(_) => Context::message(vec! [ text!("No quote found!") ])
-							}
-        				}
-        			}
+        				Ok(quote) => return Context::message(quote.response),
+        				Err(_) => return Context::message(vec! [ text!("Invalid quote id!") ])
+        			};
         		},
 				_ => {
 					println!("Got non-message packet to command handler.");
