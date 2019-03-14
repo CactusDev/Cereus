@@ -75,93 +75,38 @@ impl Command {
 		}
 	}
 
-	pub fn get_default_command_executor(&self) -> Option<&Box<BuiltinCommandHandler>> {
+	pub fn get_default_command_executor(&self) -> (usize, Option<&Box<BuiltinCommandHandler>>) {
 		self.get_named_subcommand(vec! ["default".to_string()])
 	}
 
-	pub fn get_named_subcommand(&self, arguments: Vec<String>) -> Option<&Box<BuiltinCommandHandler>> {
-		match arguments.split_first() {
-			Some((first, remaining)) => {
-				let current_command = self.commands.get(first);
-				if let None = current_command {
-					return self.get_default_command_executor();
-				}
-				let mut current_command: &HandlerType = current_command.unwrap();
-				let name_index = 0;
-				let max_name_index = remaining.len();
-				if max_name_index == 0 {
-					// If we don't have anything else that we can look at, then what we have must be the final
-					// thing that we're expecting.
-					// However, if it's still a subcommand type, then we'll just give nothing back.
-					return match current_command {
-						HandlerType::SubCommands(sub) => {
-							match sub.get("default") {
-								Some(cmd) => {
-									let cmd: &HandlerType = &**cmd;
-									match cmd {
-										HandlerType::Only(cmd) => Some(&cmd),
-										_ => {
-											// If this happens, it's a super bad internal error.
-											// In the macro, we validate that the default handler
-											// does not (because it can't) contain subcommands.
-											// :needs_error
-											None
-										}
-									}
-								},
-								None => None
-							}
-						},
-						HandlerType::Only(cmd) => Some(cmd)
-					}
-				}
+	pub fn get_named_subcommand(&self, arguments: Vec<String>) -> (usize, Option<&Box<BuiltinCommandHandler>>) {
+		match arguments.as_slice() {
+			[first, remaining..] => {
+				match self.commands.get(first) {
+					Some(cmd) => {
+						let cmd = cmd;
+						let mut name_index = 1;
+						let max_name_index = remaining.len();
+						if name_index >= max_name_index {
+							return (0, None);
+						}
 
-				//
-				// Known bug:
-				//
-				// this system does not support tri-sub command resolution.
-				// Ex: `!cactus a b c`
-				// It only seems to work up to `a b`.
-				//      - Innectic 10/16/18
-				//
-
-				loop {
-					let current_name: &str = &remaining[name_index];
-
-					match current_command {
-						HandlerType::SubCommands(sub) => match sub.get(current_name) {
-							Some(cmd) => {
-								current_command = cmd;
-							},
-							None => match sub.get("default") {
-								Some(cmd) => {
-									current_command = cmd;
-								},
-								None => {
-									//
-									// KNOWN BUG:
-									//
-									// If a command / subcommand does not have a default handler,
-									// it will not continue to search for subcommands within it.
-									//
-									// Referer: Test (test_tri_subcommand_resolution)
-									// :bug
-									//
-									return None
+						let mut current_command = &**cmd;
+						loop {
+							let current_name = &remaining[name_index - 1];
+							match current_command {
+								HandlerType::Only(command) => return (name_index, Some(&command)),
+								HandlerType::SubCommands(subcommands) => match subcommands.get(current_name) {
+									Some(cmd) => current_command = cmd,
+									None => return (0, None)
 								}
 							}
-						},
-						HandlerType::Only(cmd) => {
-						
-							return Some(cmd);
 						}
-					}
+					},
+					None => return self.get_default_command_executor()
 				}
 			},
-			None => {
-				// If we don't have any arguments, give the default handler.
-				self.get_default_command_executor()
-			}
+			_ => (0, None)
 		}
 	}
 }

@@ -19,6 +19,13 @@ impl Component {
             &Component::URL(ref url) => url.to_string(),
         }
     }
+
+    pub fn is_text(&self) -> bool {
+        match self {
+            &Component::Text(_) => true,
+            _ => false
+        }
+    }
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -37,6 +44,21 @@ pub enum Packet {
     Message { text: Vec<Component>, action: bool },
     Ban { duration: Option<usize> },
     Event { kind: Event },
+}
+
+impl Packet {
+
+    pub fn get_from_text(&self, index: usize) -> Option<&Component> {
+        match self {
+            Packet::Message { text, action: _ } => {
+                match text.get(index) {
+                    Some(t) => Some(t),
+                    None => None
+                }
+            }
+            _ => None
+        }
+    }
 }
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
@@ -132,6 +154,15 @@ impl Context {
         self.service = context.service.clone();
     
         self
+    }
+
+    pub fn cut(self, index: usize) -> Option<Context> {
+        println!("CUTTING {}", index);
+        if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
+            let (_, remaining) = text.split_at(index);
+            return Some(Context::message(remaining.to_vec()));
+        }
+        None
     }
 }
 
