@@ -8,7 +8,7 @@ pub fn create_quote_command() -> Command {
         	match context.packet {
         		Packet::Message { ref text, action: _ } => {
         			let id = match text.as_slice() {
-        				[_, id, _rest..] => match id {
+        				[id, _rest..] => match id {
         					Component::Text(id) => id,
         					_ => return Context::message(vec! [ text!("Invalid syntax! !quote [id]") ])
         				},
@@ -35,14 +35,7 @@ pub fn create_quote_command() -> Command {
         "add" => handler!(|context, api| {
         	match context.packet {
 				Packet::Message { ref text, action: _ } => {
-					let response = {
-						match text.as_slice() {
-							[_, _, response..] => response.to_vec(),
-							_ => return Context::message(vec! [ text!("Invalid syntax! !quote add <response...>") ])
-						}
-					};
-
-					let result = api.create_quote(&context.channel, response);
+					let result = api.create_quote(&context.channel, text.to_vec());
 					match result {
 						Ok(data) => Context::message(vec! [
 							text!("Quote "),
@@ -64,7 +57,7 @@ pub fn create_quote_command() -> Command {
         	match context.packet {
         		Packet::Message { ref text, action: _ } => {
         			let id = match text.as_slice() {
-        				[_, _, id, _rest..] => match id {
+        				[id, _rest..] => match id {
         					Component::Text(id) => id,
         					_ => return Context::message(vec! [ text!("Invalid syntax! !quote remove <id>") ])
         				},

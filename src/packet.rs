@@ -149,19 +149,18 @@ impl Context {
     }
 
     pub fn merge(mut self, context: &Context) -> Context {
-        self.user = context.user.clone();
         self.channel = context.channel.clone();
         self.service = context.service.clone();
-    
+        self.user = context.user.clone();
         self
     }
 
-    pub fn cut(self, index: usize) -> Option<Context> {
+    pub fn cut(mut self, index: usize) -> Context {
         if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
             let (_, remaining) = text.split_at(index);
-            return Some(Context::message(remaining.to_vec()));
+            self.packet = Packet::Message { text: remaining.to_vec(), action: false };  // TODO: Pass action in
         }
-        None
+        self
     }
 }
 

@@ -217,24 +217,17 @@ impl CommandManager {
 				Some((name, arguments)) => match name {
 					Component::Text(component) => match self.commands.get(&component.trim().replace("!", "")) {
 						Some(handler) => {
-							// We have a builtin comamnd of this name.
+							// We have a builtin comamnd with this name.
 							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-								(index, Some(handler)) => self.fill_response_formatters(&handler(&context.clone().cut(index).unwrap(), &self.api).merge(context), text.to_vec(), None).ok(),
-								(_, None) => {
-									println!("A");
-									None
-								}
+								(index, Some(handler)) => self.fill_response_formatters(&handler(&context.clone().cut(index), &self.api).merge(context), text.to_vec(), None).ok(),
+								(_, None) => None
 							}
 						},
 						None => {
 							// No builtin command was found. Check the API.
 							match self.try_dynamic_command(&context.channel, &component.replace("!", "")) {
 								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
-								Err(_) => {
-									Some(Context::message(vec! [
-										text!("Command not found.")
-									]))
-								}
+								Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 							}
 						}
 					},
