@@ -80,33 +80,60 @@ impl Command {
 	}
 
 	pub fn get_named_subcommand(&self, arguments: Vec<String>) -> (usize, Option<&Box<BuiltinCommandHandler>>) {
-		match arguments.as_slice() {
-			[first, remaining..] => {
-				match self.commands.get(first) {
-					Some(cmd) => {
-						let cmd = cmd;
-						let mut name_index = 1;
-						let max_name_index = remaining.len();
-						if name_index >= max_name_index {
-							return (0, None);
-						}
+		match arguments.split_first() {
+			Some((first, remaining)) => {
+				let current_command = self.commands.get(first);
+				if let None = current_command {
+					return self.get_default_command_executor();
+				}
+				let mut current_command: &HandlerType = current_command.unwrap();
+				let mut name_index = 1;
+				let max_name_index = remaining.len();
 
-						let mut current_command = &**cmd;
-						loop {
-							let current_name = &remaining[name_index - 1];
-							match current_command {
-								HandlerType::Only(command) => return (name_index, Some(&command)),
-								HandlerType::SubCommands(subcommands) => match subcommands.get(current_name) {
-									Some(cmd) => current_command = cmd,
-									None => return (0, None)
+				loop {
+					if max_name_index == 0 || name_index >= max_name_index {
+						// If we don't have anything else that we can look at, then what we have must be the final
+						// thing that we're expecting.
+						// However, if it's still a subcommand type, then we'll just give nothing back.
+						return match current_command {
+							HandlerType::SubCommands(sub) => {
+								match sub.get("default") {
+									Some(cmd) => {
+										let cmd: &HandlerType = &**cmd;
+										match cmd {
+											HandlerType::Only(cmd) => (name_index, Some(&cmd)),
+											_ => {
+												(name_index, None)
+											}
+										}
+									},
+									None => (name_index, None)
 								}
-							}
+							},
+							HandlerType::Only(cmd) => (name_index, Some(cmd))
 						}
-					},
-					None => return self.get_default_command_executor()
+					}
+
+					let current_name: &str = &remaining[name_index - 1];
+
+					match current_command {
+						HandlerType::SubCommands(sub) => match sub.get(current_name) {
+							Some(cmd) => current_command = cmd,
+							None => match sub.get("default") {
+								Some(cmd) => current_command = cmd,
+								None => return (name_index, None)
+							}
+						},
+						HandlerType::Only(cmd) => return (name_index, Some(cmd))
+					}
+
+					name_index += 1;
 				}
 			},
-			_ => (0, None)
+			None => {
+				// If we don't have any arguments, give the default handler.
+				self.get_default_command_executor()
+			}
 		}
 	}
 }

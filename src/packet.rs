@@ -157,7 +157,6 @@ impl Context {
     }
 
     pub fn cut(self, index: usize) -> Option<Context> {
-        println!("CUTTING {}", index);
         if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
             let (_, remaining) = text.split_at(index);
             return Some(Context::message(remaining.to_vec()));

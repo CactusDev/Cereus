@@ -220,7 +220,10 @@ impl CommandManager {
 							// We have a builtin comamnd of this name.
 							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
 								(index, Some(handler)) => self.fill_response_formatters(&handler(&context.clone().cut(index).unwrap(), &self.api).merge(context), text.to_vec(), None).ok(),
-								(_, None) => None
+								(_, None) => {
+									println!("A");
+									None
+								}
 							}
 						},
 						None => {

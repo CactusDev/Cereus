@@ -86,7 +86,7 @@ fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default
 			Context::message(vec! [
 				text!("This is a "),
                 text!("{}!", &if let Packet::Message { ref text, action: _ } = context.packet {
-					text[1].to_string()
+					text[0].to_string()
 				} else {
 					"Unknown".to_string()
 				})
