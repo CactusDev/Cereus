@@ -40,7 +40,7 @@ fn main() {
             let command_handler = handler::command::CommandHandler::new("!", manager);
             let spam_handler = handler::spam::SpamHandler::new();
             let handler_handler = handler::HandlerHandler::new(vec! [
-                Box::new(logging_handler), 
+                Box::new(logging_handler), Box::new(spam_handler),
                 Box::new(event_handler),   Box::new(command_handler)
             ]);
 
