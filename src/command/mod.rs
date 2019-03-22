@@ -91,7 +91,7 @@ impl Command {
 				let max_name_index = remaining.len();
 
 				loop {
-					if max_name_index == 0 || name_index >= max_name_index {
+					if max_name_index == 0 || name_index > max_name_index {
 						// If we don't have anything else that we can look at, then what we have must be the final
 						// thing that we're expecting.
 						// However, if it's still a subcommand type, then we'll just give nothing back.
@@ -102,9 +102,7 @@ impl Command {
 										let cmd: &HandlerType = &**cmd;
 										match cmd {
 											HandlerType::Only(cmd) => (name_index, Some(&cmd)),
-											_ => {
-												(name_index, None)
-											}
+											_ => (name_index, None)
 										}
 									},
 									None => (name_index, None)
@@ -115,6 +113,7 @@ impl Command {
 					}
 
 					let current_name: &str = &remaining[name_index - 1];
+					name_index += 1;
 
 					match current_command {
 						HandlerType::SubCommands(sub) => match sub.get(current_name) {
@@ -126,8 +125,6 @@ impl Command {
 						},
 						HandlerType::Only(cmd) => return (name_index, Some(cmd))
 					}
-
-					name_index += 1;
 				}
 			},
 			None => {

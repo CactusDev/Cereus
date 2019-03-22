@@ -640,6 +640,39 @@ fn test_command_channel_formatter() {
 }
 
 #[test]
+fn test_command_multi_deep_arguments_pass_only_from_end_of_subcommands() {
+    let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+    manager.add_command(command!("cactus",
+        "test" => handler!(
+            "ing" => handler!(|context, _api| {
+                Context::message(vec! [
+                    text!("Hello, "),
+                    text!("{}!", &if let Packet::Message { ref text, action: _ } = context.packet {
+                        text[0].to_string()
+                    } else {
+                        "Unknown".to_string()
+                    })
+                ])
+            })
+        )
+    ));
+
+    let context = get_example_text_only_context(Packet::Message {
+        text: vec! [ text!("cactus"), text!("test"), text!("ing"), text!("thing") ],
+        action: false
+    });
+    let resolved = manager.run_command(&context);
+    assert!(resolved.is_some());
+
+    let first_packet = Packet::Message { text: vec! [
+        text!("Hello, "),
+        text!("thing!")
+    ], action: false };
+
+    assert_eq!(resolved.unwrap().packet, first_packet);
+}
+
+#[test]
 fn test_start_with_new() {
 	let handler = EventHandler::new();
 
