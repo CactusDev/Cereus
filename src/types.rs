@@ -27,3 +27,9 @@ pub struct Command {
 	pub services: Vec<String>,
 	pub updated_at: String
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Trust {
+	pub channel: String,
+	pub trusted: String
+}

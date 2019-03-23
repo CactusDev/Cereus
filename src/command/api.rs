@@ -1,5 +1,5 @@
 
-use types::{Command, Quote};
+use types::{Trust, Command, Quote};
 use packet::{Component};
 use serde_json::{Value, from_value, json};
 
@@ -54,7 +54,6 @@ impl CommandAPI {
 
 	pub fn remove_quote(&self, channel: &str, id: &str) -> Result<(), reqwest::Error> {
 		let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
-		println!("{}", url);
 		self.client.delete(&url)
 			.send()?.error_for_status()?;
 		Ok(())
@@ -98,6 +97,31 @@ impl CommandAPI {
 			"services": json!([])
 		});
 		self.client.patch(&url).json(&body)
+			.send()?.error_for_status()?;
+		Ok(())
+	}
+
+	pub fn get_trusts(&self, channel: &str) -> Result<Vec<Trust>, reqwest::Error> {
+		let url = self.get_api_url(&format!("trust/{}", channel));
+		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
+		Ok(from_value(thing["data"].clone()).unwrap())
+	}
+
+	pub fn get_trust(&self, channel: &str, user: &str) -> Result<Trust, reqwest::Error> {
+		let url = self.get_api_url(&format!("trust/{}/{}", channel, user));
+		let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
+		Ok(from_value(thing["data"].clone()).unwrap())
+	}
+
+	pub fn add_trust(&self, channel: &str, trusted: &str) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("trust/{}/{}", channel, trusted));
+		self.client.post(&url).send()?.error_for_status()?;
+		Ok(())
+	}
+
+	pub fn remove_trust(&self, channel: &str, trusted: &str) -> Result<(), reqwest::Error> {
+		let url = self.get_api_url(&format!("trust/{}/{}", channel, trusted));
+		self.client.delete(&url)
 			.send()?.error_for_status()?;
 		Ok(())
 	}

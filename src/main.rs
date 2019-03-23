@@ -34,6 +34,7 @@ fn main() {
             manager.add_command(command::command::create_command_command());
             manager.add_command(command::quote::create_quote_command());
             manager.add_command(command::multi::create_multi_command());
+            manager.add_command(command::trust::create_trust_command());
 
             let logging_handler = handler::logging::LoggingHandler::new();
             let event_handler = handler::event::EventHandler::new();
