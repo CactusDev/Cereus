@@ -149,6 +149,25 @@ fn test_tri_subcommand_resolution() {
     assert_eq!(resolved.unwrap().packet, first_packet);
 }
 
+// #[test]
+// fn test_no_arguments_are_passed_to_handler_when_final_argument_is_end_of_subcommand_resolution() {
+//     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
+//     manager.add_command(command!("cactus",
+//         "test" => handler!(|_context, _api| {
+//             Context::message(vec! [ text!("%ARGS%") ])
+//         })
+//     ));
+//     let context = get_example_text_only_context(Packet::Message {
+//         text: vec! [ text!("!cactus"), text!("test") ],
+//         action: false
+//     });
+//     let resolved = manager.run_command(&context);
+//     let first_packet = Packet::Message { text: vec! [text!("")], action: false };
+
+//     assert!(resolved.is_some());
+//     assert_eq!(resolved.unwrap().packet, first_packet)
+// }
+
 #[test]
 fn test_command_user_formatter() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
@@ -297,7 +316,7 @@ fn test_command_args_formatter_with_default_arguments_and_none_provided() {
     ));
 
     let context = get_example_text_only_context(Packet::Message {
-        text: vec! [ text!("cmd") ],
+        text: vec! [ text!("!cmd") ],
         action: false
     });
 

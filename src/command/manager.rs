@@ -95,6 +95,7 @@ impl CommandManager {
 		let argn      = matches.get(1);
 		let default   = matches.get(2);
 		let modifiers = matches.get(3);
+		println!("{:?} {:?}", args, argn);
 
 		if argn.is_none() {
 			return None;
@@ -112,6 +113,7 @@ impl CommandManager {
 				return None
 			}
 		};
+		println!("ARGUMENT RESULT {}", result);
 
 		if let Some(modifiers) = modifiers {
 			let modifiers = modifiers.as_str().split("|").skip(1)
@@ -167,39 +169,37 @@ impl CommandManager {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
 
-				if let Some((_command_name, args)) = input.split_first() {
-					for component in text {
-						match component.clone() {
-							Component::Text(ref text) => {
-								let mut text = text.to_string();
+				for component in text {
+					match component.clone() {
+						Component::Text(ref text) => {
+							let mut text = text.to_string();
 
-								// Fill %USER% if we have it.
-								if let Some(ref user) = &context.user {
-									text = text.replace("%USER%", user);
-								}
-								// Attempt to fill the count. This is only present on dynamics.
-								if let Some(ref meta) = meta {
-									// Since we were given meta, we know this is a dynamic command,
-									// meaning we have the count.
-									text = text.replace("%COUNT%", &meta.count.to_string());
-								}
-								// Next, fill the channel.
-								text = text.replace("%CHANNEL%", &context.channel);
+							// Fill %USER% if we have it.
+							if let Some(ref user) = &context.user {
+								text = text.replace("%USER%", user);
+							}
+							// Attempt to fill the count. This is only present on dynamics.
+							if let Some(ref meta) = meta {
+								// Since we were given meta, we know this is a dynamic command,
+								// meaning we have the count.
+								text = text.replace("%COUNT%", &meta.count.to_string());
+							}
+							// Next, fill the channel.
+							text = text.replace("%CHANNEL%", &context.channel);
 
-								// Then, args / argn
-								if self.argn_regex.is_match(&text.clone()) {
-									text = self.argn_regex.replace(&text, |caps: &Captures| self.sub_argn(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
-								}
+							// Then, args / argn
+							if self.argn_regex.is_match(&text.clone()) {
+								text = self.argn_regex.replace(&text, |caps: &Captures| self.sub_argn(input.clone(), caps.clone()).unwrap_or(String::new())).to_string();
+							}
 
-								if self.args_regex.is_match(&text.clone()) {
-									text = self.args_regex.replace(&text, |caps: &Captures| self.sub_args(args.to_vec(), caps.clone()).unwrap_or(String::new())).to_string();
-								}
+							if self.args_regex.is_match(&text.clone()) {
+								text = self.args_regex.replace(&text, |caps: &Captures| self.sub_args(input.clone(), caps.clone()).unwrap_or(String::new())).to_string();
+							}
 
-								// Finally, lets store the component.
-								filled_components.push(Component::Text(text));
-							},
-							_ => filled_components.push(component.clone())
-						}
+							// Finally, lets store the component.
+							filled_components.push(Component::Text(text));
+						},
+						_ => filled_components.push(component.clone())
 					}
 				}
 
@@ -219,14 +219,17 @@ impl CommandManager {
 						Some(handler) => {
 							// We have a builtin comamnd with this name.
 							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-								(index, Some(handler)) => self.fill_response_formatters(&handler(&context.clone().cut(index), &self.api).merge(context), text.to_vec(), None).ok(),
+								(index, Some(handler)) => {
+									let context = context.clone().cut(index);
+									self.fill_response_formatters(&handler(&context, &self.api).merge(&context), arguments.to_vec(), None).ok()
+								},
 								(_, None) => None
 							}
 						},
 						None => {
 							// No builtin command was found. Check the API.
 							match self.try_dynamic_command(&context.channel, &component.replace("!", "")) {
-								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), text.to_vec(), None).ok(),
+								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), context.get_packet_content(), None).ok(),
 								Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 							}
 						}

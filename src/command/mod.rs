@@ -98,9 +98,10 @@ impl Command {
 						// However, if it's still a subcommand type, then we'll just give nothing back.
 						return match current_command {
 							HandlerType::SubCommands(sub) => {
+								name_index += 1;
 								match sub.get("default") {
 									Some(cmd) => {
-										let cmd: &HandlerType = &**cmd;
+										let cmd: &HandlerType = &**cmd;  // TODO: Make that go away
 										match cmd {
 											HandlerType::Only(cmd) => (name_index, Some(&cmd)),
 											_ => (name_index, None)

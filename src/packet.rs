@@ -46,21 +46,6 @@ pub enum Packet {
     Event { kind: Event },
 }
 
-impl Packet {
-
-    pub fn get_from_text(&self, index: usize) -> Option<&Component> {
-        match self {
-            Packet::Message { text, action: _ } => {
-                match text.get(index) {
-                    Some(t) => Some(t),
-                    None => None
-                }
-            }
-            _ => None
-        }
-    }
-}
-
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
@@ -161,6 +146,13 @@ impl Context {
             self.packet = Packet::Message { text: remaining.to_vec(), action: false };  // TODO: Pass action in
         }
         self
+    }
+
+    pub fn get_packet_content(&self) -> Vec<Component> {
+        match &self.packet {
+            &Packet::Message { ref text, action: _ } => text.to_vec(),
+            _ => vec! []  // TODO: Maybe I should change this to an option?
+        }
     }
 }
 
