@@ -213,30 +213,25 @@ impl CommandManager {
 
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
 		match context.packet {
-			Packet::Message { ref text, action: _ } => match text.split_first() {
-				Some((name, arguments)) => match name {
-					Component::Text(component) => match self.commands.get(&component.trim().replace("!", "")) {
-						Some(handler) => {
-							// We have a builtin comamnd with this name.
-							match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
-								(index, Some(handler)) => {
-									let context = context.clone().cut(index);
-									self.fill_response_formatters(&handler(&context, &self.api).merge(&context), arguments.to_vec(), None).ok()
-								},
-								(_, None) => None
-							}
-						},
-						None => {
-							// No builtin command was found. Check the API.
-							match self.try_dynamic_command(&context.channel, &component.replace("!", "")) {
-								Ok(ctx) => self.fill_response_formatters(&ctx.merge(context), context.get_packet_content(), None).ok(),
-								Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
-							}
+			Packet::Message { ref text, action: _ } => match text.as_slice() {
+				[Component::Text(name), arguments..] => match self.commands.get(&name.trim().replace("!", "")) {
+					Some(handler) => {
+						match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
+							(index, Some(handler)) => {
+								let context = context.clone().cut(index);
+								self.fill_response_formatters(&handler(&context, &self.api).merge(&context), context.get_packet_content(), None).ok()
+							},
+							(_, None) => None
 						}
 					},
-					_ => None
+					None => {
+						match self.try_dynamic_command(&context.channel, &name.replace("!", "")) {
+							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.get_packet_content(), None).ok(),
+							Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
+						}
+					}
 				},
-				None => None
+				_ => None
 			},
 			_ => None
 		}
