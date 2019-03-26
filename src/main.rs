@@ -1,26 +1,19 @@
 
-#![feature(slice_patterns)]
-#![feature(slice_concat_ext)]
-
 extern crate iron;
-extern crate redis;
-extern crate reqwest;
-extern crate regex;
-extern crate rand;
 
-#[macro_use]
-extern crate serde_derive;
+extern crate cereus_core;
+extern crate cereus_handlers;
+extern crate cereus_commands;
 extern crate serde;
 extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
-pub mod web;
-#[macro_use]
-pub mod packet;
-pub mod handler;
-#[macro_use]
-pub mod command;
-pub mod config;
-pub mod types;
+use cereus_handlers::{HandlerHandler, command::CommandHandler, event::EventHandler, logging::LoggingHandler, spam::SpamHandler};
+use cereus_commands::commands::{manager::CommandManager, cactus::create_cactus_command, command::create_command_command, quote::create_quote_command, multi::create_multi_command, trust::create_trust_command};
+
+mod web;
+mod config;
 
 fn main() {
     // TODO: Allow argument for configuration location.
@@ -28,19 +21,19 @@ fn main() {
     let config = config::CereusConfiguration::new("cereus.json");
     match config {
         Ok(cfg) => {
-            let mut manager = command::manager::CommandManager::new("http://localhost:8000");
+            let mut manager = CommandManager::new("http://localhost:8000");
 
-            manager.add_command(command::cactus::create_cactus_command());
-            manager.add_command(command::command::create_command_command());
-            manager.add_command(command::quote::create_quote_command());
-            manager.add_command(command::multi::create_multi_command());
-            manager.add_command(command::trust::create_trust_command());
+            manager.add_command(create_cactus_command());
+            manager.add_command(create_command_command());
+            manager.add_command(create_quote_command());
+            manager.add_command(create_multi_command());
+            manager.add_command(create_trust_command());
 
-            let logging_handler = handler::logging::LoggingHandler::new();
-            let event_handler = handler::event::EventHandler::new();
-            let command_handler = handler::command::CommandHandler::new("!", manager);
-            let spam_handler = handler::spam::SpamHandler::new();
-            let handler_handler = handler::HandlerHandler::new(vec! [
+            let logging_handler = LoggingHandler::new();
+            let event_handler = EventHandler::new();
+            let command_handler = CommandHandler::new("!", manager);
+            let spam_handler = SpamHandler::new();
+            let handler_handler = HandlerHandler::new(vec! [
                 Box::new(logging_handler), Box::new(spam_handler),
                 Box::new(event_handler),   Box::new(command_handler)
             ]);

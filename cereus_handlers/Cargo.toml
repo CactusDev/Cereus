@@ -1,0 +1,9 @@
+[package]
+name = "cereus_handlers"
+version = "0.1.0"
+authors = ["Innectic <innectic@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+cereus_core = { path = "../cereus_core" }
+cereus_commands = { path = "../cereus_commands" }

@@ -28,6 +28,49 @@ impl Component {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Quote {
+    pub quote_id: i64,
+    pub response: Vec<Component>,
+    pub channel: String
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CommandMeta {
+    pub added_by: String,
+    pub cooldown: i32,
+    pub count: i32,
+    pub enabled: bool
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Command {
+    pub channel: String,
+    pub created_at: String,
+    pub deleted_at: Option<String>,
+    pub meta: CommandMeta,
+    pub name: String,
+    pub response: Vec<Component>,
+    pub services: Vec<String>,
+    pub updated_at: String
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Trust {
+    pub channel: String,
+    pub trusted: String
+}
+
+#[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Role {
+    Banned,
+    User,
+    Subscriber,
+    Moderator,
+    Owner,
+}
+
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Event {
@@ -44,16 +87,6 @@ pub enum Packet {
     Message { text: Vec<Component>, action: bool },
     Ban { duration: Option<usize> },
     Event { kind: Event },
-}
-
-#[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Role {
-    Banned,
-    User,
-    Subscriber,
-    Moderator,
-    Owner,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -156,19 +189,10 @@ impl Context {
     }
 }
 
-pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
-    let mut finished: Vec<String> = Vec::new();
-
-    for component in components {
-        finished.push(component.to_string());
-    }
-    return finished;
-}
-
 #[macro_export]
 macro_rules! url {
     ($url:expr) => {
-        $crate::packet::Component::URL($url.to_string())
+        cereus_core::types::Component::URL($url.to_string())
     }
 }
 
@@ -181,7 +205,7 @@ macro_rules! text {
         {
             let mut current = $text.to_string();
             $(current = current.replacen("{}", $replacer, 1);)*
-            $crate::packet::Component::Text(current)
+           cereus_core::types::Component::Text(current)
         }
     }
 }
@@ -189,13 +213,24 @@ macro_rules! text {
 #[macro_export]
 macro_rules! emoji {
     ($emoji:expr) => {
-        $crate::packet::Component::Emoji($emoji.to_string())
+        cereus_core::types::Component::Emoji($emoji.to_string())
     }
 }
 
 #[macro_export]
 macro_rules! tag {
     ($tag:expr) => {
-        $crate::packet::Component::Tag($tag.to_string())
+        cereus_core::types::Component::Tag($tag.to_string())
     }
 }
+
+// TODO: elimate this.
+pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
+    let mut finished: Vec<String> = Vec::new();
+
+    for component in components {
+        finished.push(component.to_string());
+    }
+    return finished;
+}
+

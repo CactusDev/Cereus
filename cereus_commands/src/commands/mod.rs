@@ -1,5 +1,5 @@
 
-use packet::*;
+use cereus_core::types::*;
 use std::collections::HashMap;
 
 pub mod manager;
@@ -12,17 +12,17 @@ macro_rules! handler {
 	($handler:expr) => {
 		{
 			// Don't really need to do any extra processing here.
-			$crate::command::HandlerType::Only(Box::new($handler))
+			$crate::commands::HandlerType::Only(Box::new($handler))
 		}
 	};
 	($($key:expr => $handler:expr),+) => {
 		{
 			// Once again, we don't really need to do anything else here other than package it into the correct type.
-			let mut subcommands: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
+			let mut subcommands: std::collections::HashMap<String, Box<$crate::commands::HandlerType>> = std::collections::HashMap::new();
 			$(
 				subcommands.insert($key.to_string(), Box::new($handler));
 			)+
-			$crate::command::HandlerType::SubCommands(subcommands)
+			$crate::commands::HandlerType::SubCommands(subcommands)
 		}
 	}
 }
@@ -31,7 +31,7 @@ macro_rules! handler {
 macro_rules! command {
 	($name:expr, $($subcommand:expr => $handler:expr),+) => {
 		{
-			let mut command_data: std::collections::HashMap<String, Box<$crate::command::HandlerType>> = std::collections::HashMap::new();
+			let mut command_data: std::collections::HashMap<String, Box<$crate::commands::HandlerType>> = std::collections::HashMap::new();
 			$(
 				// And we know that our handlers have been parsed, so we can attempt to turn this into a functional
 				// command structure that we can actually use.
@@ -43,7 +43,7 @@ macro_rules! command {
 					Context::message(vec! [ text!("Invalid argument!") ])
 				})));
 			}
-			$crate::command::Command::new($name, command_data)
+			$crate::commands::Command::new($name, command_data)
 		}
 	}
 }
