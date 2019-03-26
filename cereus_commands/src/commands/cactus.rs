@@ -1,6 +1,6 @@
 
-use command::Command;
-use packet::Context;
+use crate::commands::Command;
+use cereus_core::types::Context;
 
 pub fn create_cactus_command() -> Command {
 	command!("cactus",

@@ -1,7 +1,6 @@
 
-use command::Command;
-use packet::{Component, Packet, Context};
-use types::Command as TCommand;
+use crate::commands::Command;
+use cereus_core::types::{Component, Packet, Context, Command as TCommand};
 
 fn make_command_string(commands: Vec<TCommand>) -> Option<String> {
 	if commands.len() == 0 {

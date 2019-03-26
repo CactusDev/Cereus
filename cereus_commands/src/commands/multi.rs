@@ -1,6 +1,6 @@
 
-use command::Command;
-use packet::{Component, Packet, Context};
+use crate::commands::Command;
+use cereus_core::types::{Component, Packet, Context};
 
 const BASE: &str = "https://multi.raredrop.co";
 const VALID_SERVICES: [&str; 4] = ["t", "m", "y", "s"];

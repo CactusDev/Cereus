@@ -5,9 +5,12 @@ use rand::{
 	seq::SliceRandom
 };
 
-use command::{Command, api::CommandAPI};
-use packet::{Packet, Context, Component, string_components_to_string};
 use regex::{Regex, Captures};
+use crate::commands::{Command, api::CommandAPI};
+use cereus_core::{
+	ARGN_REGEX, ARGS_REGEX,
+	types::{Packet, Context, Component, string_components_to_string}
+};
 
 #[derive(Debug)]
 enum DynamicCommandError {
@@ -34,8 +37,8 @@ impl CommandManager {
 		CommandManager {
 			commands: HashMap::new(),
 			api: CommandAPI::new(api_base),
-			argn_regex: Regex::new(r#"%ARG(\d+)(?:=([^|]+))?(?:((?:\|\w+)+))?%"#).unwrap(),
-			args_regex: Regex::new(r#"%ARGS(?:=([^|]+))?((?:\|\w+)+)?%"#).unwrap(),
+			argn_regex: ARGN_REGEX.clone(),
+			args_regex: ARGS_REGEX.clone(),
 			modifiers: {
 				let mut modifiers: HashMap<String, Box<ModifierFunction>> = HashMap::new();
 

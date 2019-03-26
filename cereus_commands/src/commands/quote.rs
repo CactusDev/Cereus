@@ -1,6 +1,6 @@
 
-use command::Command;
-use packet::{Packet, Context, Component};
+use crate::commands::Command;
+use cereus_core::types::{Packet, Context, Component};
 
 pub fn create_quote_command() -> Command {
     command!("quote",

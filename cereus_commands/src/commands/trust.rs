@@ -1,7 +1,6 @@
 
-use command::Command;
-use packet::{Packet, Context, Component};
-use types::Trust as Trust;
+use crate::commands::Command;
+use cereus_core::types::{Packet, Context, Component, Trust};
 
 fn make_trust_string(trusts: Vec<Trust>) -> Option<String> {
     if trusts.len() == 0 {
