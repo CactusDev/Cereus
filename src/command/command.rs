@@ -32,9 +32,8 @@ pub fn create_command_command() -> Command {
 					let result = api.create_command(&context.channel, name, response);
 					match result {
 						Ok(()) => Context::message(vec! [
-							text!("Command '!"),
-							text!(name.trim()),
-							text!("' has been added!")
+							text!(&format!("Command '!{}' ", name)),
+							text!("has been added!")
 						]),
 						Err(_) => {
 							Context::message(vec! [
