@@ -246,7 +246,7 @@ impl CommandManager {
 					},
 					None => {
 						match self.try_dynamic_command(&context.channel, &name.replace("!", "")) {
-							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.get_packet_content(), None).ok(),
+							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.clone().cut(1).get_packet_content(), None).ok(),
 							Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 						}
 					}
