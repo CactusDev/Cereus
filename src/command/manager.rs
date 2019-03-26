@@ -95,7 +95,6 @@ impl CommandManager {
 		let argn      = matches.get(1);
 		let default   = matches.get(2);
 		let modifiers = matches.get(3);
-		println!("{:?} {:?}", args, argn);
 
 		if argn.is_none() {
 			return None;
@@ -113,7 +112,6 @@ impl CommandManager {
 				return None
 			}
 		};
-		println!("ARGUMENT RESULT {}", result);
 
 		if let Some(modifiers) = modifiers {
 			let modifiers = modifiers.as_str().split("|").skip(1)
@@ -216,9 +214,31 @@ impl CommandManager {
 			Packet::Message { ref text, action: _ } => match text.as_slice() {
 				[Component::Text(name), arguments..] => match self.commands.get(&name.trim().replace("!", "")) {
 					Some(handler) => {
-						match handler.get_named_subcommand(string_components_to_string(arguments.to_vec())) {
+						//
+						// HACK: This was put in place as a temp. solution to #22 (https://github.com/CactusDev/Cereus/issues/22)
+						// and should definitely be removed as fast as possible.
+						//
+						// Test: test_no_arguments_are_passed_to_handler_when_final_argument_is_end_of_subcommand_resolution
+						// Bug details: 
+						// ============
+						// If there is no argument after the final argument for subcommand resolution, the final subcommand
+						// resolution argument (in the test case, it's "test") is passed into the handler as the first argument
+						// of the command. This "solution" just forces the command to call the default handler in there, even
+						// though the resolver system should be able to handle that its self.
+						//
+						// @mustfix @speed
+						//
+						let mut args = string_components_to_string(arguments.to_vec());
+						match args.clone().last() {
+							Some(arg) => if arg != "default" {
+								args.push("default".to_string());
+							},
+							_ => {}
+						}
+						match handler.get_named_subcommand(args) {
 							(index, Some(handler)) => {
 								let context = context.clone().cut(index);
+
 								self.fill_response_formatters(&handler(&context, &self.api).merge(&context), context.get_packet_content(), None).ok()
 							},
 							(_, None) => None

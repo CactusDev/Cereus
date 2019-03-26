@@ -28,7 +28,6 @@ pub fn create_command_command() -> Command {
 							_ => return Context::message(vec! [])
 						}
 					};
-					println!("{:?} {} {:?}", &context, name, response);
 
 					let result = api.create_command(&context.channel, name, response);
 					match result {
