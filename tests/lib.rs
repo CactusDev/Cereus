@@ -1,16 +1,13 @@
 
 #[macro_use]
-extern crate cereus;
+extern crate cereus_core;
+extern crate cereus_handlers;
+#[macro_use]
+extern crate cereus_commands;
 
-use cereus::{
-	command::manager::CommandManager,
-	handler::{
-		Handler,
-		event::EventHandler,
-        spam::SpamHandler
-	},
-	packet::*
-};
+use cereus_core::types::*;
+use cereus_handlers::{Handler, event::EventHandler, spam::SpamHandler};
+use cereus_commands::commands::manager::CommandManager;
 
 fn get_example_text_only_context(packet: Packet) -> Context {
 	Context {
