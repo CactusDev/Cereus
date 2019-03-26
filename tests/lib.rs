@@ -951,6 +951,27 @@ fn test_leave() {
 }
 
 #[test]
+fn test_spam_shouldnt_run_on_moderators() {
+    let context = Context {
+        packet: Packet::Message {
+            text: vec! [
+                text!("THIS IS A LOT OF CAPITAL LETTERS!")
+            ], action: false
+        },
+        channel: "".to_string(),
+        user: Some("Stanley".to_string()),
+        role: Some(Role::Moderator),
+        target: None,
+        service: Some("Twitch".to_string()),
+        count: None     
+    };
+    let handler = SpamHandler::new();
+    let result = handler.run(&context);
+
+    assert_eq!(result.len(), 0);
+}
+
+#[test]
 fn test_spam_compliant_message() {
     let context = Context {
         packet: Packet::Message {

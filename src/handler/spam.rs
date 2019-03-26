@@ -54,6 +54,17 @@ impl Handler for SpamHandler {
 		// Should be something like /{channel}/offence/{offender}
 		//
 		// TODO: Pull these values from the API user configuration
+		
+		// If the user is a moderator or higher, then we don't care
+		// TODO: Make sure we even care about the role via user config
+		match context.role {
+			Some(ref role) => match role {
+				Role::Moderator | Role::Owner => return vec! [],
+				Role::Subscriber => {},  // TODO: Check if subs can send links
+				_ => {}
+			},
+			_ => {}
+		}
 
 		if let Packet::Message { ref text, action: _ } = context.packet {
 			let caps = caps_score(&text);

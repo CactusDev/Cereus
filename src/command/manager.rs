@@ -227,8 +227,8 @@ impl CommandManager {
 						// though the resolver system should be able to handle that its self.
 						//
 						// @mustfix @speed
-						//
-						let mut args = string_components_to_string(arguments.to_vec());
+						//// Can this be eliminated? @speed
+						let mut args = string_components_to_string(arguments.to_vec());  // Can this be eliminated? @speed
 						match args.clone().last() {
 							Some(arg) => if arg != "default" {
 								args.push("default".to_string());
@@ -238,7 +238,6 @@ impl CommandManager {
 						match handler.get_named_subcommand(args) {
 							(index, Some(handler)) => {
 								let context = context.clone().cut(index);
-
 								self.fill_response_formatters(&handler(&context, &self.api).merge(&context), context.get_packet_content(), None).ok()
 							},
 							(_, None) => None
