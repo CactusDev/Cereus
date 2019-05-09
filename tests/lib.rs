@@ -5,6 +5,9 @@ extern crate cereus_handlers;
 #[macro_use]
 extern crate cereus_commands;
 
+extern crate serde;
+extern crate serde_json;
+
 use cereus_core::types::*;
 use cereus_handlers::{Handler, event::EventHandler, spam::SpamHandler};
 use cereus_commands::commands::manager::CommandManager;
