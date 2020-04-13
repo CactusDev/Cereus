@@ -30,16 +30,16 @@ pub fn create_cactus_command() -> Command {
             ])
         }),
         "github" => handler!(
-        "default" => handler!(|_context, _api| {
-            Context::message(vec! [
-                text!("We're open source! Check it out at: "),
-                url!("https://github.com/CactusDev")
-            ])
-        }),
-        "issue" => handler!(|_context, _api| {
-            Context::message(vec! [
-                text!("Checkout Cereus at: "),
-                url!("https://github.com/CactusDev/CactusBot/issues")
+            "default" => handler!(|_context, _api| {
+                Context::message(vec! [
+                    text!("We're open source! Check it out at: "),
+                    url!("https://github.com/CactusDev")
+                ])
+            }),
+            "issue" => handler!(|_context, _api| {
+                Context::message(vec! [
+                    text!("Checkout Cereus at: "),
+                    url!("https://github.com/CactusDev/CactusBot/issues")
                 ])
             })
         )

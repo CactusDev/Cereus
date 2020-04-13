@@ -18,7 +18,7 @@ pub fn create_command_command() -> Command {
 				Packet::Message { ref text, action: _ } => {
 					let (name, response) = {
 						match text.as_slice() {
-							[name, rest..] => match name {
+							[name, rest @ ..] => match name {
 								Component::Text(name) => (name, rest.to_vec()),
 								_ => return Context::message(vec! [
 									text!("Invalid syntax! !command add <name> <response...>")
@@ -51,7 +51,7 @@ pub fn create_command_command() -> Command {
 			match context.packet {
 				Packet::Message { ref text, action: _ } => {
 					let name = match text.as_slice() {
-						[name, _rest..] => match name {
+						[name, _rest @ ..] => match name {
 							Component::Text(name) => name,
 							_ => return Context::message(vec! [
 								text!("Invalid syntax! !command remove <name>")
@@ -93,7 +93,7 @@ pub fn create_command_command() -> Command {
 			match context.packet {
 				Packet::Message { ref text, action: _ } => {
 					let (name, response) = match text.as_slice() {
-						[name, rest..] => match name {
+						[name, rest @ ..] => match name {
 							Component::Text(name) => (name, rest.to_vec()),
 							_ => return Context::message(vec! [
 								text!("Invalid syntax! !command edit <name> <response...>")

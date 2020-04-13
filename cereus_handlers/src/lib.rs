@@ -11,7 +11,7 @@ pub trait Handler {
 }
 
 pub struct HandlerHandler {
-    handlers: Vec<Box<Handler>>
+    handlers: Vec<Box<dyn Handler>>
 }
 
 unsafe impl Sync for HandlerHandler {}
@@ -19,7 +19,7 @@ unsafe impl Send for HandlerHandler {}
 
 impl HandlerHandler {
 
-    pub fn new(handlers: Vec<Box<Handler>>) -> Self {
+    pub fn new(handlers: Vec<Box<dyn Handler>>) -> Self {
         HandlerHandler {
             handlers
         }

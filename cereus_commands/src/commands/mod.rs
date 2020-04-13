@@ -5,7 +5,7 @@ use std::collections::HashMap;
 pub mod manager;
 pub mod api;
 
-pub type BuiltinCommandHandler = Fn(&Context, &api::CommandAPI) -> Context;
+pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CommandAPI) -> Context;
 
 #[macro_export]
 macro_rules! handler {

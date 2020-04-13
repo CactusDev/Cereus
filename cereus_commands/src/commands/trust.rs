@@ -30,7 +30,7 @@ pub fn create_trust_command() -> Command {
             match context.packet {
                 Packet::Message { ref text, action: _ } => {
                     match text.as_slice() {
-                        [Component::Text(user), _rest..] => match api.add_trust(&context.channel, &user) {
+                        [Component::Text(user), _rest @ ..] => match api.add_trust(&context.channel, &user) {
                             Ok(()) => Context::message(vec! [ tag!(user), text!(" is now trusted!") ]),
                             _ => Context::message(vec![ tag!(user), text!(" was already trusted.") ])
                         },
@@ -46,7 +46,7 @@ pub fn create_trust_command() -> Command {
             match context.packet {
                 Packet::Message { ref text, action: _ } => {
                     match text.as_slice() {
-                        [Component::Text(user), _rest..] => match api.remove_trust(&context.channel, &user) {
+                        [Component::Text(user), _rest @ ..] => match api.remove_trust(&context.channel, &user) {
                             Ok(()) => Context::message(vec! [ text!(user), text!(" is no longer trusted!") ]),
                             _ => Context::message(vec![ tag!(user), text!(" is not trusted.") ])
                         },

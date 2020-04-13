@@ -58,6 +58,15 @@ impl CommandAPI {
         Ok(())
     }
 
+    pub fn edit_quote(&self, channel: &str, id: &str, quote: Vec<Component>) -> Result<(), reqwest::Error> {
+        let url = self.get_api_url(&format!("quote/{}/{}", channel, id));
+        let body = json!({
+            "response": quote
+        });
+        let result: Value = self.client.patch(&url).json(&body).send()?.error_for_status()?.json()?;
+        Ok(from_value(result["data"].clone()).unwrap())
+    }
+
     pub fn get_command(&self, channel: &str, command: &str) -> Result<Command, reqwest::Error> {
         let url = self.get_api_url(&format!("command/{}/{}", channel, command));
         let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;

@@ -17,7 +17,7 @@ enum DynamicCommandError {
 	RequestError(reqwest::Error)
 }
 
-type ModifierFunction = Fn(&String) -> String;
+type ModifierFunction = dyn Fn(&String) -> String;
 
 pub struct CommandManager {
 	commands: HashMap<String, Command>,
@@ -215,7 +215,7 @@ impl CommandManager {
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
 		match context.packet {
 			Packet::Message { ref text, action: _ } => match text.as_slice() {
-				[Component::Text(name), arguments..] => match self.commands.get(&name.trim().replace("!", "")) {
+				[Component::Text(name), arguments @ ..] => match self.commands.get(&name.trim().replace("!", "")) {
 					Some(handler) => {
 						//
 						// HACK: This was put in place as a temp. solution to #22 (https://github.com/CactusDev/Cereus/issues/22)
