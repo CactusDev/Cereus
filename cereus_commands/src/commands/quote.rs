@@ -78,18 +78,15 @@ pub fn create_quote_command() -> Command {
         "edit" => handler!(|context, api| {
             match context.packet {
                 Packet::Message { ref text, action: _ } => {
-                let id = match text.as_slice() {
-                        [id, _rest @ ..] => match id {
-                            Component::Text(id) => id,
-                            _ => return Context::message(vec! [ text!("Invalid syntax! !quote remove <id>") ])
-                        },
-                        _ => return Context::message(vec! [])
-                    };
-
-                    match api.edit_quote(&context.channel, &id, text.to_vec()) {
-                        Ok(()) => Context::message(vec! [ text!("Quote"), text!(id), text!("has been edited!") ]),
-                        Err(_) => Context::message(vec! [ text!("Quote not found!") ])
+                    if let Some((id, quote)) = text.split_first() {
+                        if let Component::Text(id) = id {
+                            return match api.edit_quote(&context.channel, &id, quote.to_vec()) {
+                                Ok(()) => Context::message(vec! [ text!("Quote"), text!(id), text!("has been edited!") ]),
+                                Err(_) => Context::message(vec! [ text!("Quote not found!") ])
+                            };
+                        }
                     }
+                    return Context::message(vec! [ text!("Invalid syntax! !quote edit <id> <quote>") ]);
                 },
                 _ => {
                     println!("Got non-message packet to command handler.");

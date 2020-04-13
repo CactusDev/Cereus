@@ -63,8 +63,8 @@ impl CommandAPI {
         let body = json!({
             "response": quote
         });
-        let result: Value = self.client.patch(&url).json(&body).send()?.error_for_status()?.json()?;
-        Ok(from_value(result["data"].clone()).unwrap())
+        self.client.patch(&url).json(&body).send()?.error_for_status()?;
+        Ok(())
     }
 
     pub fn get_command(&self, channel: &str, command: &str) -> Result<Command, reqwest::Error> {
