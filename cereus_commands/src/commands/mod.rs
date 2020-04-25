@@ -53,6 +53,7 @@ pub mod command;
 pub mod quote;
 pub mod multi;
 pub mod trust;
+pub mod social;
 
 pub enum HandlerType {
 	/// Handler type only has a default handler
