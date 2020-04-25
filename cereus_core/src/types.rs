@@ -61,6 +61,14 @@ pub struct Trust {
     pub trusted: String
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Social {
+    pub channel: String,
+    pub service: String,
+    pub url: String
+}
+
+
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {

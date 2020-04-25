@@ -7,7 +7,7 @@ pub fn create_social_command() -> Command {
         "default" => handler!(|context, api| {
             match context.packet {
                 Packet::Message { ref text, action: _ } => {
-                    
+                    let result = api.get_socials
                 }
             }
         })

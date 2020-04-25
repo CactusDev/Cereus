@@ -1,5 +1,5 @@
 
-use cereus_core::types::{Trust, Command, Quote, Component};
+use cereus_core::types::{Trust, Command, Quote, Social, Component};
 use serde_json::{Value, from_value, json};
 
 pub struct CommandAPI {
@@ -132,5 +132,17 @@ impl CommandAPI {
         self.client.delete(&url)
             .send()?.error_for_status()?;
         Ok(())
+    }
+
+    pub fn get_socials(&self, channel: &str) -> Result<Vec<Social>, reqwest::Error> {
+        let url = self.get_api_url(&format!("socials/{}", channel));
+        let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
+        Ok(from_value(thing["data"].clone()).unwrap())
+    }
+
+    pub fn get_social(&self, channel: &str, service: &str) -> Result<Trust, reqwest::Error> {
+        let url = self.get_api_url(&format!("socials/{}/{}", channel, service));
+        let thing: Value = self.client.get(&url).send()?.error_for_status()?.json()?;
+        Ok(from_value(thing["data"].clone()).unwrap())
     }
 }
