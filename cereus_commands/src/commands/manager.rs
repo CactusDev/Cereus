@@ -6,7 +6,7 @@ use rand::{
 };
 
 use regex::{Regex, Captures};
-use crate::commands::{Command, api::CommandAPI};
+use crate::commands::{Command, api::CactusAPI};
 use cereus_core::{
 	ARGN_REGEX, ARGS_REGEX,
 	types::{Packet, Context, Component, string_components_to_string}
@@ -21,7 +21,7 @@ type ModifierFunction = dyn Fn(&String) -> String;
 
 pub struct CommandManager {
 	commands: HashMap<String, Command>,
-	api: CommandAPI,
+	api: CactusAPI,
 	argn_regex: Regex,
 	args_regex: Regex,
 	modifiers: HashMap<String, Box<ModifierFunction>>
@@ -36,7 +36,7 @@ impl CommandManager {
 	pub fn new(api_base: &str) -> Self {
 		CommandManager {
 			commands: HashMap::new(),
-			api: CommandAPI::new(api_base),
+			api: CactusAPI::new(api_base),
 			argn_regex: ARGN_REGEX.clone(),
 			args_regex: ARGS_REGEX.clone(),
 			modifiers: {

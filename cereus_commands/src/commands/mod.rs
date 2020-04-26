@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 pub mod manager;
 
-pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CommandAPI) -> Context;
+pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CactusAPI) -> Context;
 
 #[macro_export]
 macro_rules! get {
@@ -14,7 +14,6 @@ macro_rules! get {
             let res: Value = $client.get($url)
                 .send()?.error_for_status()?.json()?;
             let res: $t = from_value(res["data"].clone()).unwrap();
-            println!("result: {:?}", res);
             res
         };
         Ok(result)
@@ -29,7 +28,6 @@ macro_rules! post {
             let res: Value = $client.post($url).json(&$body)
                 .send()?.error_for_status()?.json()?;
             let res: $t = from_value(res["data"].clone()).unwrap();
-            println!("result: {:?}", res);
             res
         };
         Ok(result)

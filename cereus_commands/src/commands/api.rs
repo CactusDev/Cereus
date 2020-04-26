@@ -2,15 +2,15 @@
 use cereus_core::types::{Trust, Command, Quote, Social, Component, QuoteAddResponse};
 use serde_json::{Value, from_value, json};
 
-pub struct CommandAPI {
+pub struct CactusAPI {
     client: reqwest::Client,
     base: String
 }
 
-impl CommandAPI {
+impl CactusAPI {
 
     pub fn new(base: &str) -> Self {
-        CommandAPI {
+        Self {
             client: reqwest::Client::new(),
             base: base.to_string()
         }
