@@ -197,6 +197,12 @@ impl Context {
     }
 }
 
+#[derive(Deserialize, Debug)]
+pub struct QuoteAddResponse {
+    pub created: bool,
+    pub id: u32
+}
+
 #[macro_export]
 macro_rules! url {
     ($url:expr) => {

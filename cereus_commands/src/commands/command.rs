@@ -34,7 +34,8 @@ pub fn create_command_command() -> Command {
 							text!(&format!("Command '!{}' ", name)),
 							text!("has been added!")
 						]),
-						Err(_) => {
+						Err(e) => {
+							println!("{:?}", e);
 							Context::message(vec! [
 								text!("Command already exists!")
 							])
