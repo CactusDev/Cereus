@@ -2,50 +2,6 @@
 use cereus_core::types::{Trust, Command, Quote, Social, Component, QuoteAddResponse};
 use serde_json::{Value, from_value, json};
 
-macro_rules! get {
-    ($t:ty, $url:tt, $client:expr, $base:expr) => {{
-        let $url = &format!("{}/{}", $base, $url);
-        let result: $t = {
-            let res: Value = $client.get($url)
-                .send()?.error_for_status()?.json()?;
-            let res: $t = from_value(res["data"].clone()).unwrap();
-            println!("result: {:?}", res);
-            res
-        };
-        Ok(result)
-    }}
-}
-
-macro_rules! post {
-    ($t:ty, $url:tt, $body:tt, $client:expr, $base:expr) => {{
-        let $url = &format!("{}/{}", $base, $url);
-        let result: $t = {
-            let res: Value = $client.post($url).json(&$body)
-                .send()?.error_for_status()?.json()?;
-            let res: $t = from_value(res["data"].clone()).unwrap();
-            println!("result: {:?}", res);
-            res
-        };
-        Ok(result)
-    }}
-}
-
-macro_rules! patch {
-    ($url:tt, $body:expr, $client:expr, $base:expr) => {{
-        let $url = &format!("{}/{}", $base, $url);
-        $client.patch($url).json(&$body).send()?.error_for_status()?;
-        Ok(())
-    }}
-}
-
-macro_rules! delete {
-    ($url:tt, $client:expr, $base:expr) => {{
-        let $url = &format!("{}/{}", $base, $url);
-        $client.delete($url).send()?.error_for_status()?;
-        Ok(())
-    }}
-}
-
 pub struct CommandAPI {
     client: reqwest::Client,
     base: String

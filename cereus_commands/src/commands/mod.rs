@@ -3,9 +3,56 @@ use cereus_core::types::*;
 use std::collections::HashMap;
 
 pub mod manager;
-pub mod api;
 
 pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CommandAPI) -> Context;
+
+#[macro_export]
+macro_rules! get {
+    ($t:ty, $url:tt, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        let result: $t = {
+            let res: Value = $client.get($url)
+                .send()?.error_for_status()?.json()?;
+            let res: $t = from_value(res["data"].clone()).unwrap();
+            println!("result: {:?}", res);
+            res
+        };
+        Ok(result)
+    }}
+}
+
+#[macro_export]
+macro_rules! post {
+    ($t:ty, $url:tt, $body:tt, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        let result: $t = {
+            let res: Value = $client.post($url).json(&$body)
+                .send()?.error_for_status()?.json()?;
+            let res: $t = from_value(res["data"].clone()).unwrap();
+            println!("result: {:?}", res);
+            res
+        };
+        Ok(result)
+    }}
+}
+
+#[macro_export]
+macro_rules! patch {
+    ($url:tt, $body:expr, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        $client.patch($url).json(&$body).send()?.error_for_status()?;
+        Ok(())
+    }}
+}
+
+#[macro_export]
+macro_rules! delete {
+    ($url:tt, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        $client.delete($url).send()?.error_for_status()?;
+        Ok(())
+    }}
+}
 
 #[macro_export]
 macro_rules! handler {
@@ -26,6 +73,9 @@ macro_rules! handler {
 		}
 	}
 }
+
+pub mod api;
+
 
 #[macro_export]
 macro_rules! command {
