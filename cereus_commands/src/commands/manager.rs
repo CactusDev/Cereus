@@ -153,7 +153,6 @@ impl CommandManager {
 	fn try_dynamic_command(&self, channel: &str, name: &str) -> Result<Context, DynamicCommandError> {
 		// The name of the command should be the first component, so lets pull that out
 		let response = self.api.get_command(channel, name).map_err(|err| DynamicCommandError::RequestError(err))?;
-		// TODO: Finish count implementation
 		return Ok(Context {
 			packet: Packet::Message { text: response.response, action: false },
 			channel: response.channel,

@@ -182,9 +182,9 @@ impl Context {
     }
 
     pub fn cut(mut self, index: usize) -> Context {
-        if let Packet::Message { ref mut text, action: _ } = self.packet.clone() {
+        if let Packet::Message { ref mut text, action } = self.packet.clone() {
             let (_, remaining) = text.split_at(index);
-            self.packet = Packet::Message { text: remaining.to_vec(), action: false };  // TODO: Pass action in
+            self.packet = Packet::Message { text: remaining.to_vec(), action: action };  // TODO: Pass action in
         }
         self
     }
@@ -192,7 +192,7 @@ impl Context {
     pub fn get_packet_content(&self) -> Vec<Component> {
         match &self.packet {
             &Packet::Message { ref text, action: _ } => text.to_vec(),
-            _ => vec! []  // TODO: Maybe I should change this to an option?
+            _ => vec! []
         }
     }
 }
