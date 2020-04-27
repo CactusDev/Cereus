@@ -68,6 +68,15 @@ pub struct Social {
     pub url: String
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct UserOffences {
+    pub channel: String,
+    pub service: String,
+    pub user: String,
+    pub caps: i32,
+    pub emoji: i32,
+    pub urls: i32
+}
 
 #[derive(Eq, PartialEq, Ord, PartialOrd, Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -219,7 +228,7 @@ macro_rules! text {
         {
             let mut current = $text.to_string();
             $(current = current.replacen("{}", $replacer, 1);)*
-           cereus_core::types::Component::Text(current)
+            cereus_core::types::Component::Text(current)
         }
     }
 }

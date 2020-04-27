@@ -10,7 +10,7 @@ extern crate serde_json;
 extern crate serde_derive;
 
 use cereus_handlers::{HandlerHandler, command::CommandHandler, event::EventHandler, logging::LoggingHandler, spam::SpamHandler};
-use cereus_commands::commands::{manager::CommandManager, cactus::create_cactus_command, command::create_command_command, quote::create_quote_command, multi::create_multi_command, trust::create_trust_command, social::create_social_command};
+use cereus_commands::commands::{manager::CommandManager, cactus::create_cactus_command, command::create_command_command, quote::create_quote_command, multi::create_multi_command, trust::create_trust_command, social::create_social_command, offences::create_offences_command};
 
 mod web;
 mod config;
@@ -29,6 +29,7 @@ fn main() {
             manager.add_command(create_multi_command());
             manager.add_command(create_trust_command());
             manager.add_command(create_social_command());
+            manager.add_command(create_offences_command());
 
             let logging_handler = LoggingHandler::new();
             let event_handler = EventHandler::new();
