@@ -28,7 +28,7 @@ fn get_example_text_only_context(packet: Packet) -> Context {
 fn test_command_name_only_resolves_to_default_handler() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|_context, _api| {
+		"default" => handler!(|_context, _api, _text, _action| {
 			Context::message(vec! [
 				text!("Hello!")
 			])
@@ -52,12 +52,12 @@ fn test_command_name_only_resolves_to_default_handler() {
 fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcommands_handler() {
 	let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|_context, _api| {
+		"default" => handler!(|_context, _api, _text, _action| {
 			Context::message(vec! [
 				text!("Hello!")
 			])
 		}),
-		"test" => handler!(|_context, _api| {
+		"test" => handler!(|_context, _api, _text, _action| {
 			Context::message(vec! [
 				text!("Hello, world!")
 			])
@@ -82,7 +82,7 @@ fn test_command_name_with_single_valid_subcommand_argument_resolves_to_subcomman
 fn test_command_name_with_single_invalid_subcommand_argument_resolves_to_default_handler_and_passes_arguments() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
-		"default" => handler!(|context, _api| {
+		"default" => handler!(|context, _api, _text, _action| {
 			Context::message(vec! [
 				text!("This is a "),
                 text!("{}!", &if let Packet::Message { ref text, action: _ } = context.packet {
@@ -114,19 +114,19 @@ fn test_tri_subcommand_resolution() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
 	manager.add_command(command!("cactus",
 		"test" => handler! {
-			"default" => handler!(|_context, _api| {
+			"default" => handler!(|_context, _api, _text, _action| {
                 Context::message(vec! [
 					text!("Hello!")
                 ])
 			}),
 			"another" => handler! {
-				"default" => handler!(|_context, _api| {
+				"default" => handler!(|_context, _api, _text, _action| {
 					Context::message(vec! [
 						text!("Hello!")
 					])
 				}),
 				"final" => handler! {
-					"default" => handler!(|_context, _api| {
+					"default" => handler!(|_context, _api, _text, _action| {
                         Context::message(vec! [
 							text!("Hello!")
 						])
@@ -153,7 +153,7 @@ fn test_tri_subcommand_resolution() {
 fn test_no_arguments_are_passed_to_handler_when_final_argument_is_end_of_subcommand_resolution() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cactus",
-        "test" => handler!(|_context, _api| {
+        "test" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [ text!("%ARGS%") ])
         })
     ));
@@ -172,7 +172,7 @@ fn test_no_arguments_are_passed_to_handler_when_final_argument_is_end_of_subcomm
 fn test_command_user_formatter() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%USER%!")
@@ -199,7 +199,7 @@ fn test_command_user_formatter() {
 fn test_command_args_formatter() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARGS%!")
@@ -226,7 +226,7 @@ fn test_command_args_formatter() {
 fn test_command_argn_formatter() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1%!")
@@ -253,7 +253,7 @@ fn test_command_argn_formatter() {
 fn test_command_argn_formatter_out_of_range() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG2%!")
@@ -280,7 +280,7 @@ fn test_command_argn_formatter_out_of_range() {
 fn test_command_argn_formatter_with_additional_dangling_arguments() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1%!")
@@ -307,7 +307,7 @@ fn test_command_argn_formatter_with_additional_dangling_arguments() {
 fn test_command_args_formatter_with_default_arguments_and_none_provided() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARGS=user%!")
@@ -334,7 +334,7 @@ fn test_command_args_formatter_with_default_arguments_and_none_provided() {
 fn test_command_args_formatter_with_default_arguments_with_provided() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARGS=user%!")
@@ -363,7 +363,7 @@ fn test_command_args_formatter_with_default_arguments_with_provided() {
 fn test_command_argn_formatter_with_default_arguments_and_none_provided() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1=user%!")
@@ -390,7 +390,7 @@ fn test_command_argn_formatter_with_default_arguments_and_none_provided() {
 fn test_command_argn_formatter_with_default_arguments_with_provided() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1=user%!")
@@ -417,7 +417,7 @@ fn test_command_argn_formatter_with_default_arguments_with_provided() {
 fn test_command_argn_formatter_with_default_arguments_with_provided_modifier_upper() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1=user|upper%!")
@@ -444,7 +444,7 @@ fn test_command_argn_formatter_with_default_arguments_with_provided_modifier_upp
 fn test_command_argn_formatter_with_default_arguments_with_none_modifier_upper() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1=user|upper%!")
@@ -471,7 +471,7 @@ fn test_command_argn_formatter_with_default_arguments_with_none_modifier_upper()
 fn test_command_argn_formatter_with_modifier_lower() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1|lower%!")
@@ -498,7 +498,7 @@ fn test_command_argn_formatter_with_modifier_lower() {
 fn test_command_argn_formatter_with_modifier_title() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1|title%!")
@@ -525,7 +525,7 @@ fn test_command_argn_formatter_with_modifier_title() {
 fn test_command_argn_formatter_with_modifier_reverse() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1|reverse%!")
@@ -552,7 +552,7 @@ fn test_command_argn_formatter_with_modifier_reverse() {
 fn test_command_argn_formatter_with_modifier_tag() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("@%ARG1|tag%!")
@@ -579,7 +579,7 @@ fn test_command_argn_formatter_with_modifier_tag() {
 fn test_command_argn_formatter_with_modifier_shuffle() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1|shuffle%!")
@@ -606,7 +606,7 @@ fn test_command_argn_formatter_with_modifier_shuffle() {
 fn test_command_argn_formatter_with_modifier_chain() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("Hello "),
                 text!("%ARG1|title|tag%!")
@@ -633,7 +633,7 @@ fn test_command_argn_formatter_with_modifier_chain() {
 fn test_command_channel_formatter() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cmd",
-        "default" => handler!(|_context, _api| {
+        "default" => handler!(|_context, _api, _text, _action| {
             Context::message(vec! [
                 text!("This is the "),
                 text!("%CHANNEL% "),
@@ -663,7 +663,7 @@ fn test_command_multi_deep_arguments_pass_only_from_end_of_subcommands() {
     let mut manager = CommandManager::new("https://api.cactus.opsywopsy.science/v1");
     manager.add_command(command!("cactus",
         "test" => handler!(
-            "ing" => handler!(|context, _api| {
+            "ing" => handler!(|context, _api, _text, _action| {
                 Context::message(vec! [
                     text!("Hello, "),
                     text!("{}!", &if let Packet::Message { ref text, action: _ } = context.packet {

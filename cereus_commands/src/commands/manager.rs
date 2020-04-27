@@ -216,20 +216,6 @@ impl CommandManager {
 			Packet::Message { ref text, action } => match text.as_slice() {
 				[Component::Text(name), arguments @ ..] => match self.commands.get(&name.trim().replace("!", "")) {
 					Some(handler) => {
-						//
-						// HACK: This was put in place as a temp. solution to #22 (https://github.com/CactusDev/Cereus/issues/22)
-						// and should definitely be removed as fast as possible.
-						//
-						// Test: test_no_arguments_are_passed_to_handler_when_final_argument_is_end_of_subcommand_resolution
-						// Bug details: 
-						// ============
-						// If there is no argument after the final argument for subcommand resolution, the final subcommand
-						// resolution argument (in the test case, it's "test") is passed into the handler as the first argument
-						// of the command. This "solution" just forces the command to call the default handler in there, even
-						// though the resolver system should be able to handle that its self.
-						//
-						// @mustfix @speed
-						//// Can this be eliminated? @speed
 						let mut args = string_components_to_string(arguments.to_vec());  // Can this be eliminated? @speed
 						match args.clone().last() {
 							Some(arg) => if arg != "default" {
