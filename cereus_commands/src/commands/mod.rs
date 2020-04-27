@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 pub mod manager;
 
-pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CactusAPI) -> Context;
+pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CactusAPI, Vec<Component>, bool) -> Context;
 
 #[macro_export]
 macro_rules! get {
@@ -86,7 +86,7 @@ macro_rules! command {
 				command_data.insert($subcommand.to_string(), Box::new($handler));
 			)+
 			if let None = command_data.get("default") {
-				command_data.insert("default".to_string(), Box::new(handler!(|_context, _api| {
+				command_data.insert("default".to_string(), Box::new(handler!(|_context, _api, _text, _action| {
 					// TODO: Make this more meaningful
 					Context::message(vec! [ text!("Invalid argument!") ])
 				})));

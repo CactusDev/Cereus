@@ -213,7 +213,7 @@ impl CommandManager {
 
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
 		match context.packet {
-			Packet::Message { ref text, action: _ } => match text.as_slice() {
+			Packet::Message { ref text, action } => match text.as_slice() {
 				[Component::Text(name), arguments @ ..] => match self.commands.get(&name.trim().replace("!", "")) {
 					Some(handler) => {
 						//
@@ -240,7 +240,7 @@ impl CommandManager {
 						match handler.get_named_subcommand(args) {
 							(index, Some(handler)) => {
 								let context = context.clone().cut(index);
-								self.fill_response_formatters(&handler(&context, &self.api).merge(&context), context.get_packet_content(), None).ok()
+								self.fill_response_formatters(&handler(&context, &self.api, context.get_packet_content(), action).merge(&context), context.get_packet_content(), None).ok()
 							},
 							(_, None) => None
 						}

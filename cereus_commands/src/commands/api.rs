@@ -1,5 +1,5 @@
 
-use cereus_core::types::{Trust, Command, Quote, Social, Component, UserOffences, QuoteAddResponse};
+use cereus_core::types::{Trust, Command, Quote, Social, Component, QuoteAddResponse};
 use serde_json::{Value, from_value, json};
 
 pub struct CactusAPI {
