@@ -1,10 +1,10 @@
 
-use cereus_core::types::*;
+use cereus_core::types::{*, Command as TCommand};
 use std::collections::HashMap;
 
 pub mod manager;
 
-pub type BuiltinCommandHandler = dyn Fn(&Context, &api::CactusAPI, Vec<Component>, bool) -> Context;
+pub type BuiltinCommandHandler = dyn Fn(&Context, &Box<dyn APIHandler>, Vec<Component>, bool) -> Context;
 
 #[macro_export]
 macro_rules! get {
@@ -184,4 +184,27 @@ impl Command {
 			}
 		}
 	}
+}
+
+type APIResult<T> = Result<T, reqwest::Error>;
+
+pub trait APIHandler {
+    fn get_random_quote(&self, channel: &str) -> APIResult<Quote>;
+    fn get_quote(&self, channel: &str, id: &str) -> APIResult<Quote>;
+    fn create_quote(&self, channel: &str, quote: Vec<Component>) -> APIResult<QuoteAddResponse>;
+    fn remove_quote(&self, channel: &str, id: &str) -> APIResult<()>;
+    fn edit_quote(&self, channel: &str, id: &str, quote: Vec<Component>) -> APIResult<()>;
+    fn get_command(&self, channel: &str, command: &str) -> APIResult<TCommand>;
+    fn create_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()>;
+    fn remove_command(&self, channel: &str, command: &str) -> APIResult<()>;
+    fn list_command(&self, channel: &str) -> APIResult<Vec<TCommand>>;
+    fn edit_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()>;
+    fn get_trusts(&self, channel: &str) -> APIResult<Vec<Trust>>;
+    fn get_trust(&self, channel: &str, user: &str) -> APIResult<Trust>;
+    fn add_trust(&self, channel: &str, trusted: &str) -> APIResult<()>;
+    fn remove_trust(&self, channel: &str, trusted: &str) -> APIResult<()>;
+    fn get_socials(&self, channel: &str) -> APIResult<Vec<Social>>;
+    fn get_social(&self, channel: &str, service: &str) -> APIResult<Social>;
+    fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) -> APIResult<i32>;
+    fn update_user_offences(&self, channel: &str, service: &str, user: &str, ty: &str, operation: &str, amount: &str) -> APIResult<()>;
 }
