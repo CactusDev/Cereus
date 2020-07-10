@@ -1,9 +1,17 @@
 
+use std::vec::Vec;
+
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub struct EmojiData {
+    pub standard: String,
+    pub alternatives: Vec<String>
+}
+
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data", rename_all = "lowercase")]
 pub enum Component {
     Text(String),
-    Emoji(String),
+    Emoji(EmojiData),
     Tag(String),
     URL(String),
 }
@@ -14,7 +22,7 @@ impl Component {
         // TODO: Make this do more than just return whatever the crap we have
         match self {
             &Component::Text(ref text) => text.to_string(),
-            &Component::Emoji(ref emoji) => emoji.to_string(),
+            &Component::Emoji(ref emoji) => emoji.standard.clone(),
             &Component::Tag(ref tag) => tag.to_string(),
             &Component::URL(ref url) => url.to_string(),
         }
@@ -236,7 +244,7 @@ macro_rules! text {
 #[macro_export]
 macro_rules! emoji {
     ($emoji:expr) => {
-        cereus_core::types::Component::Emoji($emoji.to_string())
+        cereus_core::types::Component::Emoji(cereus_core::types::EmojiData { standard: $emoji.to_string(), alternatives: vec![] })  // TODO: Make this lookup alternatives
     }
 }
 

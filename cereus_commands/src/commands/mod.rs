@@ -27,6 +27,7 @@ macro_rules! post {
         let result: $t = {
             let res: Value = $client.post($url).json(&$body)
                 .send()?.error_for_status()?.json()?;
+            println!("{:?}", res);
             let res: $t = from_value(res["data"].clone()).unwrap();
             res
         };
