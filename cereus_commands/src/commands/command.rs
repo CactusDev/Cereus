@@ -1,6 +1,9 @@
 
 use crate::commands::Command;
-use cereus_core::types::{Component, Context, Command as TCommand};
+use cereus_core::{
+	COMMAND_PREFIX,
+	types::{Component, Context, Command as TCommand}
+};
 
 fn make_command_string(commands: Vec<TCommand>) -> Option<String> {
 	if commands.len() == 0 {
@@ -11,13 +14,30 @@ fn make_command_string(commands: Vec<TCommand>) -> Option<String> {
                   |a, b| if a.len() > 0 { a + ", " } else { a } + &b.name));
 }
 
+fn ident_to_role(role: &str) -> String {
+	match role {
+		"+" => "moderator".to_string(),
+		"$" => "subscriber".to_string(),
+		_ => "user".to_string()
+	}
+}
+
 pub fn create_command_command() -> Command {
 	command!("command",
 		"add" => handler!(|context, api, text, _action| {
-			let (name, response) = {
+			let (role, name, response) = {
 				match text.as_slice() {
 					[name, rest @ ..] => match name {
-						Component::Text(name) => (name, rest.to_vec()),
+						Component::Text(name) => {
+							// Check if the first char of the name is a permission prefix
+							let first = name.chars().next().unwrap();
+							let first = first.to_string();
+							match COMMAND_PREFIX.contains(&first) {
+								// We do have it, that means this should be restricted in some form.
+								true => (first.clone(), name.chars().skip(1).collect::<String>(), rest.to_vec()),
+								false => ("".to_string(), name.clone(), rest.to_vec())
+							}
+						},
 						_ => return Context::message(vec! [
 							text!("Invalid syntax! !command add <name> <response...>")
 						])
@@ -26,10 +46,11 @@ pub fn create_command_command() -> Command {
 				}
 			};
 
-			let result = api.create_command(&context.channel, name, response);
+			let role = ident_to_role(&role);
+			let result = api.create_command(&context.channel, &name, response, &role);
 			match result {
 				Ok(()) => Context::message(vec! [
-					text!(&format!("Command '!{}' ", name)),
+					text!(&format!("Command '!{}' ", &name)),
 					text!("has been added!")
 				]),
 				Err(e) => {

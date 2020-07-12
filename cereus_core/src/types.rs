@@ -48,7 +48,8 @@ pub struct CommandMeta {
     pub added_by: String,
     pub cooldown: i32,
     pub count: i32,
-    pub enabled: bool
+    pub enabled: bool,
+    pub role: Role
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

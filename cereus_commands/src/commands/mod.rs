@@ -196,7 +196,7 @@ pub trait APIHandler {
     fn remove_quote(&self, channel: &str, id: &str) -> APIResult<()>;
     fn edit_quote(&self, channel: &str, id: &str, quote: Vec<Component>) -> APIResult<()>;
     fn get_command(&self, channel: &str, command: &str) -> APIResult<TCommand>;
-    fn create_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()>;
+    fn create_command(&self, channel: &str, command: &str, response: Vec<Component>, role: &str) -> APIResult<()>;
     fn remove_command(&self, channel: &str, command: &str) -> APIResult<()>;
     fn list_command(&self, channel: &str) -> APIResult<Vec<TCommand>>;
     fn edit_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()>;

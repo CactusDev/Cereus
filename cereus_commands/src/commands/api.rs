@@ -55,11 +55,12 @@ impl APIHandler for CactusAPI {
         get!(Command, url, self.client, self.base)
     }
 
-    fn create_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()> {
+    fn create_command(&self, channel: &str, command: &str, response: Vec<Component>, role: &str) -> APIResult<()> {
         let url = &format!("command/{}/{}", channel, command);
         let body = json!({
             "response": response,
-            "services": json!([])  // TODO
+            "services": json!([]),  // TODO
+            "role": role
         });
         match post!(Command, url, body, self.client, self.base) {
             Ok(_) => Ok(()),

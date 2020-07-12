@@ -9,7 +9,7 @@ use regex::{Regex, Captures};
 use crate::commands::{Command, APIHandler, api::CactusAPI};
 use cereus_core::{
 	ARGN_REGEX, ARGS_REGEX,
-	types::{Packet, Context, Component, string_components_to_string}
+	types::{Packet, Context, Component, Role, string_components_to_string}
 };
 
 #[derive(Debug)]
@@ -150,9 +150,24 @@ impl CommandManager {
 		return Some(result);
 	}
 
-	fn try_dynamic_command(&self, channel: &str, name: &str) -> Result<Context, DynamicCommandError> {
+	fn try_dynamic_command(&self, name: &str, context: &Context) -> Result<Context, DynamicCommandError> {
 		// The name of the command should be the first component, so lets pull that out
-		let response = self.api.get_command(channel, name).map_err(|err| DynamicCommandError::RequestError(err))?;
+		let response = self.api.get_command(&context.channel, name).map_err(|err| DynamicCommandError::RequestError(err))?;
+
+		// Check the role of the command.
+		if response.meta.role > context.role.clone().unwrap_or(Role::User) {
+			// User is not able to run this command.
+			return Ok(Context {
+				packet: Packet::Message { text: vec![ text!("You do not have permission for this command!") ], action: false },
+				channel: context.channel.clone(),
+				user: None,
+				role: None,
+				target: context.user.clone(),
+				service: None,
+				count: None
+			});
+		}
+
 		return Ok(Context {
 			packet: Packet::Message { text: response.response, action: false },
 			channel: response.channel,
@@ -232,7 +247,7 @@ impl CommandManager {
 						}
 					},
 					None => {
-						match self.try_dynamic_command(&context.channel, &name.replace("!", "")) {
+						match self.try_dynamic_command(&name.replace("!", ""), &context) {
 							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.clone().cut(1).get_packet_content(), None).ok(),
 							Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 						}
