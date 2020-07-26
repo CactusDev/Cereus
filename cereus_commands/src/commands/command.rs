@@ -149,6 +149,43 @@ pub fn create_command_command() -> Command {
 				}
 				Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
 			}
+		}),
+		"count" => handler!(|context, api, text, _action| {
+			let (command, number) = match text.as_slice() {
+				[command, number, _remaining @ ..] => (command.text(), number.text()),
+				[command, _remaining @ ..] => (command.text(), None),
+				_ => (None, None)
+			};
+
+			// HACK: Really bad really hacky really needs to be fixed someday
+			if command.is_none() {
+				return Context::message(vec! [ text!("Invalid syntax! !command count <command> [count]") ])
+			}
+
+			match number {
+				Some(mut number) => {
+					let symbol = number.to_string().chars().collect::<Vec<char>>()[0];
+					if symbol.is_digit(10) {
+						number = Component::Text(format!("={}", number.to_string()));
+					}
+
+					let response = api.update_count(&context.channel, &command.unwrap().to_string(), &number.to_string());
+					match response {
+						Ok(response) => Context::message(vec! [
+							text!("Count updated. New count:"),
+							text!(response.count.to_string())
+						]),
+						Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
+					}
+				},
+				None => match api.get_command(&context.channel, &command.unwrap().to_string()) {
+					Ok(response) => return Context::message(vec! [
+						text!("Current command count: "),
+						text!(response.meta.count.to_string())
+					]),
+					Err(_) => return Context::message(vec! [ text!("Command does not exist!") ])
+				}
+			}
 		})
 	)
 }

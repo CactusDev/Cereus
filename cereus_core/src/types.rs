@@ -34,6 +34,13 @@ impl Component {
             _ => false
         }
     }
+
+    pub fn text(&self) -> Option<Component> {
+        match self.is_text() {
+            true => Some(self.clone()),
+            _ => None
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -269,4 +276,10 @@ pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
 #[derive(Deserialize, Debug)]
 pub struct ChangeCommandStateResponse {
     pub previous_state: bool
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UpdateCountResult {
+    pub updated: bool,
+    pub count: i32
 }
