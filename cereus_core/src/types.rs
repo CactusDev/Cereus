@@ -266,3 +266,7 @@ pub fn string_components_to_string(components: Vec<Component>) -> Vec<String> {
     return finished;
 }
 
+#[derive(Deserialize, Debug)]
+pub struct ChangeCommandStateResponse {
+    pub previous_state: bool
+}

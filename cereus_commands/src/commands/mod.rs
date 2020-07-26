@@ -233,5 +233,5 @@ pub trait APIHandler {
     fn get_social(&self, channel: &str, service: &str) -> APIResult<Social>;
     fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) -> APIResult<i32>;
     fn update_user_offences(&self, channel: &str, service: &str, user: &str, ty: &str, operation: &str, amount: &str) -> APIResult<()>;
-    fn change_command_state(&self, channel: &str, name: &str, state: bool) -> APIResult<bool>;
+    fn change_command_state(&self, channel: &str, name: &str, state: bool) -> APIResult<ChangeCommandStateResponse>;
 }

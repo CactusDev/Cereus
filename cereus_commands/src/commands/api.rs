@@ -1,6 +1,6 @@
 
 use crate::commands::{APIHandler, APIResult};
-use cereus_core::types::{Trust, Command, Quote, Social, Component, QuoteAddResponse};
+use cereus_core::types::{Trust, Command, Quote, Social, Component, QuoteAddResponse, ChangeCommandStateResponse};
 use serde_json::{Value, from_value, json};
 
 pub struct CactusAPI {
@@ -136,5 +136,16 @@ impl APIHandler for CactusAPI {
         });
 
         patch!(url, body, self.client, self.base)
+    }
+
+    fn change_command_state(&self, channel: &str, command: &str, state: bool) -> APIResult<ChangeCommandStateResponse> {
+        let url = &format!("command/{}/{}/state", channel, command);
+        println!("{:?} {:?} {:?} {:?}", url, state, command, channel);
+
+        let body = json!({
+            "state": state
+        });
+
+        patch!(ChangeCommandStateResponse, url, body, self.client, self.base)
     }
 }

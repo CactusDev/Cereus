@@ -113,6 +113,42 @@ pub fn create_command_command() -> Command {
 				]),
 				Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
 			}
+		}),
+		"enable" => handler!(|context, api, text, _action| {
+			let name = match text.as_slice() {
+				[name, _remaining @ ..] => match name {
+					Component::Text(name) => name,
+					_ => return Context::message(vec! [ text!("Invalid syntax! !command enable <name>") ])
+				},
+				_ => return Context::message(vec! [])
+			};
+
+			let result = api.change_command_state(&context.channel, name, true);
+			match result {
+				Ok(data) => match data.previous_state {
+					true => Context::message(vec! [ text!("Command is already enabled!") ]),
+					false => Context::message(vec! [ text!("Command has been enabled!") ])
+				}
+				Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
+			}
+		}),
+		"disable" => handler!(|context, api, text, _action| {
+			let name = match text.as_slice() {
+				[name, _remaining @ ..] => match name {
+					Component::Text(name) => name,
+					_ => return Context::message(vec! [ text!("Invalid syntax! !command disable <name>") ])
+				},
+				_ => return Context::message(vec! [])
+			};
+
+			let result = api.change_command_state(&context.channel, name, false);
+			match result {
+				Ok(data) => match !data.previous_state {
+					true => Context::message(vec! [ text!("Command is already disabled!") ]),
+					false => Context::message(vec! [ text!("Command has been disabled!") ])
+				}
+				Err(_) => Context::message(vec! [ text!("Command does not exist!") ])
+			}
 		})
 	)
 }
