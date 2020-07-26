@@ -1,5 +1,8 @@
 
-use std::collections::HashMap;
+use std::{
+	collections::HashMap,
+	convert::TryInto
+};
 use rand::{
 	thread_rng,
 	seq::SliceRandom
@@ -25,10 +28,6 @@ pub struct CommandManager {
 	argn_regex: Regex,
 	args_regex: Regex,
 	modifiers: HashMap<String, Box<ModifierFunction>>
-}
-
-struct DynamicCommandMeta {
-	count: u32
 }
 
 impl CommandManager {
@@ -175,11 +174,11 @@ impl CommandManager {
 			role: None,
 			target: None,
 			service: None,
-			count: None  // TODO
+			count: Some(response.meta.count.try_into().unwrap())
 		})
 	}
 
-	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>, meta: Option<DynamicCommandMeta>) -> Result<Context, ()> {
+	fn fill_response_formatters(&self, context: &Context, input: Vec<Component>) -> Result<Context, ()> {
 		match context.packet {
 			Packet::Message { ref text, action } => {
 				let mut filled_components: Vec<Component> = vec! [];
@@ -193,12 +192,7 @@ impl CommandManager {
 							if let Some(ref user) = &context.user {
 								text = text.replace("%USER%", user);
 							}
-							// Attempt to fill the count. This is only present on dynamics.
-							if let Some(ref meta) = meta {
-								// Since we were given meta, we know this is a dynamic command,
-								// meaning we have the count.
-								text = text.replace("%COUNT%", &meta.count.to_string());
-							}
+							text = text.replace("%COUNT%", &context.count.unwrap_or(0).to_string());
 							// Next, fill the channel.
 							text = text.replace("%CHANNEL%", &context.channel);
 
@@ -241,14 +235,14 @@ impl CommandManager {
 						match handler.get_named_subcommand(args) {
 							(index, Some(handler)) => {
 								let context = context.clone().cut(index);
-								self.fill_response_formatters(&handler(&context, &self.api, context.get_packet_content(), action).merge(&context), context.get_packet_content(), None).ok()
+								self.fill_response_formatters(&handler(&context, &self.api, context.get_packet_content(), action).merge(&context), context.get_packet_content()).ok()
 							},
 							(_, None) => None
 						}
 					},
 					None => {
 						match self.try_dynamic_command(&name.replace("!", ""), &context) {
-							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.clone().cut(1).get_packet_content(), None).ok(),
+							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.clone().cut(1).get_packet_content()).ok(),
 							Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 						}
 					}
