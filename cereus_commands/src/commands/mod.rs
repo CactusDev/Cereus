@@ -22,6 +22,11 @@ macro_rules! get {
 
 #[macro_export]
 macro_rules! post {
+    ($url:tt, $body:expr, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        $client.post($url).json(&$body).send()?.error_for_status()?;
+        Ok(())
+    }};
     ($t:ty, $url:tt, $body:tt, $client:expr, $base:expr) => {{
         let $url = &format!("{}/{}", $base, $url);
         let result: $t = {
@@ -41,7 +46,17 @@ macro_rules! patch {
         let $url = &format!("{}/{}", $base, $url);
         $client.patch($url).json(&$body).send()?.error_for_status()?;
         Ok(())
-    }}
+    }};
+    ($t:ty, $url:tt, $body:expr, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        let result: $t = {
+            let res: Value = $client.patch($url).json(&$body)
+                .send()?.error_for_status()?.json()?;
+            let res: $t = from_value(res["data"].clone()).unwrap();
+            res
+        };
+        Ok(result)
+    }};
 }
 
 #[macro_export]
@@ -50,7 +65,17 @@ macro_rules! delete {
         let $url = &format!("{}/{}", $base, $url);
         $client.delete($url).send()?.error_for_status()?;
         Ok(())
-    }}
+    }};
+    ($t:ty, $url:tt, $body:expr, $client:expr, $base:expr) => {{
+        let $url = &format!("{}/{}", $base, $url);
+        let result: $t = {
+            let res: Value = $client.delete($url)
+                .send()?.error_for_status()?.json()?;
+            let res: $t = from_value(res["data"].clone()).unwrap();
+            res
+        };
+        Ok(result)
+    }};
 }
 
 #[macro_export]
@@ -208,4 +233,5 @@ pub trait APIHandler {
     fn get_social(&self, channel: &str, service: &str) -> APIResult<Social>;
     fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) -> APIResult<i32>;
     fn update_user_offences(&self, channel: &str, service: &str, user: &str, ty: &str, operation: &str, amount: &str) -> APIResult<()>;
+    fn change_command_state(&self, channel: &str, name: &str, state: bool) -> APIResult<bool>;
 }
