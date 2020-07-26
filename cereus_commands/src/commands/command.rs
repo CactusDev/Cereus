@@ -152,8 +152,8 @@ pub fn create_command_command() -> Command {
 		}),
 		"count" => handler!(|context, api, text, _action| {
 			let (command, number) = match text.as_slice() {
-				[command, number, _remaining @ ..] => (command.text(), number.text()),
-				[command, _remaining @ ..] => (command.text(), None),
+				[Component::Text(command), Component::Text(number), _remaining @ ..] => (Some(command.to_string()), Some(number.to_string())),
+				[Component::Text(command), _remaining @ ..] => (Some(command.to_string()), None),
 				_ => (None, None)
 			};
 
@@ -166,10 +166,10 @@ pub fn create_command_command() -> Command {
 				Some(mut number) => {
 					let symbol = number.to_string().chars().collect::<Vec<char>>()[0];
 					if symbol.is_digit(10) {
-						number = Component::Text(format!("={}", number.to_string()));
+						number = format!("={}", number.to_string());
 					}
 
-					let response = api.update_count(&context.channel, &command.unwrap().to_string(), &number.to_string());
+					let response = api.update_count(&context.channel, &command.unwrap().to_string(), &number);
 					match response {
 						Ok(response) => Context::message(vec! [
 							text!("Count updated. New count:"),
