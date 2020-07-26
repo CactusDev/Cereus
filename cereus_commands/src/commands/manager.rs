@@ -152,6 +152,7 @@ impl CommandManager {
 	fn try_dynamic_command(&self, name: &str, context: &Context) -> Result<Context, DynamicCommandError> {
 		// The name of the command should be the first component, so lets pull that out
 		let response = self.api.get_command(&context.channel, name).map_err(|err| DynamicCommandError::RequestError(err))?;
+		let count_response = self.api.update_count(&context.channel, name, "+1").map_err(|err| DynamicCommandError::RequestError(err))?;
 
 		// Check the role of the command.
 		if response.meta.role > context.role.clone().unwrap_or(Role::User) {
@@ -174,7 +175,7 @@ impl CommandManager {
 			role: None,
 			target: None,
 			service: None,
-			count: Some(response.meta.count.try_into().unwrap())
+			count: Some(count_response.count.try_into().unwrap())
 		})
 	}
 
