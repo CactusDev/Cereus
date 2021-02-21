@@ -44,6 +44,17 @@ pub fn create_social_command() -> Command {
                 }
             }
             return Context::message(vec! [ text!("Invalid syntax! !social add <service> <address>") ]);
+        }),
+        "remove" => handler!(|context, api, text, _action| {
+            if let Some((service, _)) = text.split_first() {
+                if let Component::Text(service) = service {
+                    return match api.remove_social(&context.channel, &service) {
+                        Ok(()) => Context::message(vec! [ text!("Social service "), text!(service), text!(" has been removed!") ]),
+                        Err(_) => Context::message(vec! [ text!("Unable to remove service!") ])
+                    };
+                }
+            }
+            return Context::message(vec! [ text!("Invalid syntax! !social remove <service> <address>") ]);
         })
     )
 }

@@ -133,6 +133,11 @@ impl APIHandler for CactusAPI {
         patch!(url, body, self.client, self.base)
     }
 
+    fn remove_social(&self, channel: &str, service: &str) -> APIResult<()> {
+        let url = &format!("social/{}/{}", channel, service);
+        delete!(url, self.client, self.base)
+    }
+
     fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) ->  APIResult<i32> {
         let url = &format!("offences/{}/{}/{}/{}", channel, service, user, ty);
         get!(i32, url, self.client, self.base)
