@@ -26,7 +26,24 @@ pub fn create_social_command() -> Command {
                     result.push(text!(","));
                 }
             }
-            return Context::message(result)
+            return Context::message(result);
+        }),
+        "add" => handler!(|context, api, text, _action| {
+            if let Some((service, address)) = text.split_first() {
+                if address.len() < 1 {
+                    return Context::message(vec! [ text!("Must provide a service!") ]);
+                }
+
+                if let Component::Text(service) = service {
+                    if let Component::URL(address) = &address[0] {
+                        return match api.add_social(&context.channel, &service, &address) {
+                            Ok(()) => Context::message(vec! [ text!("Social service "), text!(service), text!(" has been added!") ]),
+                            Err(_) => Context::message(vec! [ text!("Unable to add service!") ])
+                        };
+                    }
+                }
+            }
+            return Context::message(vec! [ text!("Invalid syntax! !social add <service> <address>") ]);
         })
     )
 }

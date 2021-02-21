@@ -231,6 +231,7 @@ pub trait APIHandler {
     fn remove_trust(&self, channel: &str, trusted: &str) -> APIResult<()>;
     fn get_socials(&self, channel: &str) -> APIResult<Vec<Social>>;
     fn get_social(&self, channel: &str, service: &str) -> APIResult<Social>;
+    fn add_social(&self, channel: &str, service: &str, address: &str) -> APIResult<()>;
     fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) -> APIResult<i32>;
     fn update_user_offences(&self, channel: &str, service: &str, user: &str, ty: &str, operation: &str, amount: &str) -> APIResult<()>;
     fn change_command_state(&self, channel: &str, name: &str, state: bool) -> APIResult<ChangeCommandStateResponse>;

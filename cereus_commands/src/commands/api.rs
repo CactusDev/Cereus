@@ -119,8 +119,18 @@ impl APIHandler for CactusAPI {
     }
 
     fn get_social(&self, channel: &str, service: &str) -> APIResult<Social> {
-        let url = &format!("socials/{}/{}", channel, service);
+        let url = &format!("social/{}/{}", channel, service);
         get!(Social, url, self.client, self.base)
+    }
+
+    fn add_social(&self, channel: &str, service: &str, address: &str) -> APIResult<()> {
+        let url = &format!("social/{}/{}", channel, service);
+        
+        let body = json!({
+            "url": address
+        });
+
+        patch!(url, body, self.client, self.base)
     }
 
     fn get_offences(&self, channel: &str, service: &str, user: &str, ty: &str) ->  APIResult<i32> {
