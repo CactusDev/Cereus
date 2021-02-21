@@ -22,7 +22,7 @@ pub fn create_social_command() -> Command {
             let mut result: Vec<Component> = Vec::new();
             for (i, service) in services.iter().enumerate() {
                 result.push(text!(format!("{}: {}", service.service, service.url)));
-                if i != services.len() {
+                if i < (services.len() - 1) {
                     result.push(text!(","));
                 }
             }
