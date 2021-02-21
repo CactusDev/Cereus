@@ -114,7 +114,7 @@ impl APIHandler for CactusAPI {
     }
 
     fn get_socials(&self, channel: &str) -> APIResult<Vec<Social>> {
-        let url = &format!("socials/{}", channel);
+        let url = &format!("social/{}", channel);
         get!(Vec<Social>, url, self.client, self.base)
     }
 
