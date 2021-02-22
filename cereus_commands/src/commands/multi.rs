@@ -20,9 +20,12 @@ pub fn create_multi_command() -> Command {
 						return Context::message(vec! [ text!("Invalid syntax! !multi <service:channel...>") ])
 					}
 
-					let (service, channel) = (split[0], split[1]);
+					let (service, channel) = {
+						let s = split[0];
+						(s.chars().nth(0).unwrap_or('_').to_string(), split[1])
+					};
 					// Validate service
-					if !VALID_SERVICES.contains(&service) {
+					if !VALID_SERVICES.contains(&&*service) {
 						return Context::message(vec! [ text!("Invalid service '"), text!(&service), text!("'!") ])
 					}
 					stream += &format!("/{}{}", service, channel);
