@@ -224,7 +224,7 @@ impl CommandManager {
 	pub fn run_command(&self, context: &Context) -> Option<Context> {
 		match context.packet {
 			Packet::Message { ref text, action } => match text.as_slice() {
-				[Component::Text(name), arguments @ ..] => match self.commands.get(&name.trim().replace("!", "")) {
+				[Component::Text(name), arguments @ ..] => match self.commands.get(&name.trim().replacen("!", "", 1)) {
 					Some(handler) => {
 						let mut args = string_components_to_string(arguments.to_vec());  // Can this be eliminated? @speed
 						match args.clone().last() {
@@ -242,7 +242,7 @@ impl CommandManager {
 						}
 					},
 					None => {
-						match self.try_dynamic_command(&name.replace("!", ""), &context) {
+						match self.try_dynamic_command(&name.replacen("!", "", 1), &context) {
 							Ok(ctx) => self.fill_response_formatters(&ctx.merge(&context), context.clone().cut(1).get_packet_content()).ok(),
 							Err(_) => Some(Context::message(vec! [ text!("Command not found.") ]))
 						}
