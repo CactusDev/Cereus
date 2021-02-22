@@ -29,8 +29,8 @@ pub fn create_trust_command() -> Command {
         "add" => handler!(|context, api, text, _action| {
             match text.as_slice() {
                 [Component::Text(user), _rest @ ..] => match api.add_trust(&context.channel, &user) {
-                    Ok(()) => Context::message(vec! [ tag!(user), text!(" is now trusted!") ]),
-                    _ => Context::message(vec![ tag!(user), text!(" was already trusted.") ])
+                    Ok(_trust) => Context::message(vec! [ tag!(user), text!(" is now trusted!") ]),
+                    _ => Context::message(vec![ tag!(user), text!(" is already trusted.") ])
                 },
                 _ => Context::message(vec! [ text!("Must provide a user!") ])
             }

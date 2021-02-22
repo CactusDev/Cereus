@@ -101,12 +101,10 @@ impl APIHandler for CactusAPI {
         get!(Trust, url, self.client, self.base)
     }
 
-    fn add_trust(&self, channel: &str, trusted: &str) -> APIResult<()> {
+    fn add_trust(&self, channel: &str, trusted: &str) -> APIResult<Trust> {
         let url = &format!("trust/{}/{}", channel, trusted);
-        let body = json!({
-            // TODO
-        });
-        post!((), url, body, self.client, self.base)
+        let body = json!({});
+        post!(Trust, url, body, self.client, self.base)
     }
 
     fn remove_trust(&self, channel: &str, trusted: &str) -> APIResult<()> {

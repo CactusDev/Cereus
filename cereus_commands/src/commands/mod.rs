@@ -227,7 +227,7 @@ pub trait APIHandler {
     fn edit_command(&self, channel: &str, command: &str, response: Vec<Component>) -> APIResult<()>;
     fn get_trusts(&self, channel: &str) -> APIResult<Vec<Trust>>;
     fn get_trust(&self, channel: &str, user: &str) -> APIResult<Trust>;
-    fn add_trust(&self, channel: &str, trusted: &str) -> APIResult<()>;
+    fn add_trust(&self, channel: &str, trusted: &str) -> APIResult<Trust>;
     fn remove_trust(&self, channel: &str, trusted: &str) -> APIResult<()>;
     fn get_socials(&self, channel: &str) -> APIResult<Vec<Social>>;
     fn get_social(&self, channel: &str, service: &str) -> APIResult<Social>;
