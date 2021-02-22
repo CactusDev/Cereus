@@ -26,7 +26,7 @@ pub fn create_multi_command() -> Command {
 					};
 					// Validate service
 					if !VALID_SERVICES.contains(&&*service) {
-						return Context::message(vec! [ text!("Invalid service '"), text!(&service), text!("'!") ])
+						return Context::message(vec! [ text!("Invalid service '"), text!(&service.trim()), text!("'!") ])
 					}
 					stream += &format!("/{}{}", service, channel);
 				} else {
