@@ -29,6 +29,10 @@ pub fn create_command_command() -> Command {
 				match text.as_slice() {
 					[name, rest @ ..] => match name {
 						Component::Text(name) => {
+							if rest.len() < 1 {
+								return Context::message(vec! [ text!("Invalid syntax! !command add <name> <response...>") ]);
+							}
+
 							// Check if the first char of the name is a permission prefix
 							let first = name.chars().next().unwrap();
 							let first = first.to_string();
