@@ -85,7 +85,8 @@ impl APIHandler for CactusAPI {
         let url = &format!("command/{}/{}", channel, command);
         let body = json!({
             "response": response,
-            "services": json!([])
+            "services": json!([]),
+            "role": ""
         });
         patch!(url, body, self.client, self.base)
     }
