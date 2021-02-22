@@ -31,7 +31,7 @@ pub fn create_social_command() -> Command {
         "add" => handler!(|context, api, text, _action| {
             if let Some((service, address)) = text.split_first() {
                 if address.len() < 1 {
-                    return Context::message(vec! [ text!("Must provide a service!") ]);
+                    return Context::message(vec! [ text!("Invalid syntax! !social add <service> <address>!") ]);
                 }
 
                 if let Component::Text(service) = service {
